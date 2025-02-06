@@ -1102,6 +1102,20 @@
             <param name="clrType">The type to test.</param>
             <returns>True if the type is a DateTime; false otherwise.</returns>
         </member>
+        <member name="M:Microsoft.AspNetCore.OData.Common.TypeHelper.IsDateOnly(System.Type)">
+            <summary>
+            Determine if a type is a <see cref="T:System.DateOnly"/>.
+            </summary>
+            <param name="clrType">The type to test.</param>
+            <returns>True if the type is a DateOnly; false otherwise.</returns>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Common.TypeHelper.IsTimeOnly(System.Type)">
+            <summary>
+            Determine if a type is a <see cref="T:System.TimeOnly"/>.
+            </summary>
+            <param name="clrType">The type to test.</param>
+            <returns>True if the type is a TimeOnly; false otherwise.</returns>
+        </member>
         <member name="M:Microsoft.AspNetCore.OData.Common.TypeHelper.IsTimeSpan(System.Type)">
             <summary>
             Determine if a type is a TimeSpan.
@@ -14974,21 +14988,194 @@
         <member name="M:Microsoft.AspNetCore.OData.Routing.Template.ValueSegmentTemplate.TryTranslate(Microsoft.AspNetCore.OData.Routing.Template.ODataTemplateTranslateContext)">
             <inheritdoc />
         </member>
-    </members>
-</doc>
-ummary>
-            <param name="segment">The value segment.</param>
-        </member>
-        <member name="P:Microsoft.AspNetCore.OData.Routing.Template.ValueSegmentTemplate.Segment">
+        <member name="T:Community.OData.Linq.ODataLinqExtensions">
             <summary>
-            Gets the value segment.
+            Entry class
+            Hier zo veel mogelijk originele referenties gebruiken
             </summary>
         </member>
-        <member name="M:Microsoft.AspNetCore.OData.Routing.Template.ValueSegmentTemplate.GetTemplates(Microsoft.AspNetCore.OData.Routing.ODataRouteOptions)">
-            <inheritdoc />
+        <member name="F:Community.OData.Linq.ODataLinqExtensions.SimplifiedOptions">
+            <summary>
+            The simplified options.
+            </summary>
         </member>
-        <member name="M:Microsoft.AspNetCore.OData.Routing.Template.ValueSegmentTemplate.TryTranslate(Microsoft.AspNetCore.OData.Routing.Template.ODataTemplateTranslateContext)">
-            <inheritdoc />
+        <member name="M:Community.OData.Linq.ODataLinqExtensions.OData``1(System.Linq.IQueryable{``0},System.Action{Community.OData.Linq.ODataSettings},Microsoft.OData.Edm.IEdmModel)">
+            <summary>
+            Enable applying OData specific functions to query
+            </summary>
+            <param name="query">
+            The query.
+            </param>
+            <param name="configuration">
+            The configuration action.
+            </param>
+            <param name="edmModel">
+            The edm model.
+            </param>
+            <typeparam name="T">        
+            The query type param
+            </typeparam>
+            <returns>
+            The OData aware <see cref="T:Community.OData.Linq.ODataQuery`1"/> query.
+            </returns>
+        </member>
+        <member name="M:Community.OData.Linq.ODataLinqExtensions.SelectExpand``1(Community.OData.Linq.ODataQuery{``0},System.String,System.String,System.String)">
+            <summary>
+            Apply select and expand query options.
+            </summary>
+            <param name="query">
+            The OData aware query.
+            </param>
+            <param name="selectText">
+            The $select parameter text.
+            </param>
+            <param name="expandText">
+            The $expand parameter text.
+            </param>
+            <param name="entitySetName">
+            The entity set name.
+            </param>
+            <typeparam name="T">
+            The query type param
+            </typeparam>
+            <returns>
+            The <see cref="T:System.Collections.Generic.IEnumerable`1"/> selection result in specific format.
+            </returns>
+        </member>
+        <member name="M:Community.OData.Linq.ODataLinqExtensions.SelectExpandAsQueryable``1(Community.OData.Linq.ODataQuery{``0},System.String,System.String,System.String)">
+            <summary>
+            Apply select and expand query options to query. Warning! not all query providers support it.
+            </summary>
+            <param name="query">
+            The OData aware query.
+            </param>
+            <param name="selectText">
+            The $select parameter text.
+            </param>
+            <param name="expandText">
+            The $expand parameter text.
+            </param>
+            <param name="entitySetName">
+            The entity set name.
+            </param>
+            <typeparam name="T">
+            The query type param
+            </typeparam>
+            <returns>
+            The <see cref="T:System.Linq.IQueryable`1"/> selection result in specific format.
+            </returns>
+        </member>
+        <member name="M:Community.OData.Linq.ODataLinqExtensions.TopSkip``1(Community.OData.Linq.ODataQuery{``0},System.String,System.String,System.String)">
+            <summary>
+            Apply $top and $skip parameters to query.
+            </summary>
+            <typeparam name="T">The type param</typeparam>
+            <param name="query">The OData aware query.</param>
+            <param name="topText">$top parameter value</param>
+            <param name="skipText">$skip parameter value</param>
+            <param name="entitySetName">The entity set name.</param>
+            <returns>The <see cref="T:Community.OData.Linq.ODataQuery`1"/> query with applied $top and $skip parameters.</returns>
+        </member>
+        <member name="M:Community.OData.Linq.ODataLinqExtensions.ApplyQueryOptionsWithoutSelectExpand``1(Community.OData.Linq.ODataQuery{``0},Microsoft.AspNetCore.OData.Query.ODataRawQueryOptions,System.String)">
+            <summary>
+            Apply OData query options except $select and $expand parameters.
+            </summary>
+            <typeparam name="T">The type param.</typeparam>
+            <param name="query">The OData aware query.</param>
+            <param name="rawQueryOptions">The query options.</param>
+            <param name="entitySetName">The entity set name.</param>
+            <returns>The query <see cref="T:System.Linq.IQueryable`1"/> with applied OData parameters.</returns>
+        </member>
+        <member name="M:Community.OData.Linq.ODataLinqExtensions.ApplyQueryOptions``1(Community.OData.Linq.ODataQuery{``0},Microsoft.AspNetCore.OData.Query.ODataRawQueryOptions,System.String)">
+            <summary>
+            Apply OData query options and execute query.
+            </summary>
+            <typeparam name="T">The type param.</typeparam>
+            <param name="query">The OData aware query.</param>
+            <param name="rawQueryOptions">The query options.</param>
+            <param name="entitySetName">The entity set name.</param>
+            <returns>The enumeration of query results <see cref="T:System.Collections.Generic.IEnumerable`1"/>.</returns>
+        </member>
+        <member name="M:Community.OData.Linq.ODataLinqExtensions.ApplyQueryOptionsAsQueryable``1(Community.OData.Linq.ODataQuery{``0},Microsoft.AspNetCore.OData.Query.ODataRawQueryOptions,System.String)">
+            <summary>
+            Apply OData query options. Warning! not all providers support it.
+            </summary>
+            <typeparam name="T">The type param.</typeparam>
+            <param name="query">The OData aware query.</param>
+            <param name="rawQueryOptions">The query options.</param>
+            <param name="entitySetName">The entity set name.</param>
+            <returns>The query with special type of results <see cref="T:System.Linq.IQueryable`1"/>.</returns>
+        </member>
+        <member name="M:Community.OData.Linq.ODataLinqExtensions.Filter``1(Community.OData.Linq.ODataQuery{``0},System.String,System.String)">
+            <summary>
+            Apply $filter parameter to query.
+            </summary>
+            <param name="query">
+            The OData aware query.
+            </param>
+            <param name="filterText">
+            The $filter parameter text.
+            </param>
+            <param name="entitySetName">
+            The entity set name.
+            </param>
+            <typeparam name="T">
+            The query type param
+            </typeparam>
+            <returns>
+            The <see cref="T:Community.OData.Linq.ODataQuery`1"/> query with applied filter parameter.
+            </returns>
+            <exception cref="T:System.ArgumentNullException">
+            Argument Null Exception
+            </exception>
+        </member>
+        <member name="M:Community.OData.Linq.ODataLinqExtensions.OrderBy``1(Community.OData.Linq.ODataQuery{``0},System.String,System.String)">
+            <summary>
+            Apply $orderby parameter to query.
+            </summary>
+            <param name="query">
+            The OData aware query.
+            </param>
+            <param name="orderbyText">
+            The $orderby parameter text.
+            </param>
+            <param name="entitySetName">
+            The entity set name.
+            </param>
+            <typeparam name="T">
+            The query type param
+            </typeparam>
+            <returns>
+            The <see cref="T:Community.OData.Linq.ODataQuery`1"/> query with applied order by parameter.
+            </returns>
+            <exception cref="T:System.ArgumentNullException">
+            Argument Null Exception
+            </exception>
+        </member>
+        <member name="T:Community.OData.Linq.ODataQuery`1">
+            <summary>
+            Ook gebruikt
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="T:Community.OData.Linq.ODataSettings">
+            <summary>
+            Ook gebruikt
+            </summary>
+        </member>
+        <member name="M:Community.OData.Linq.ODataSettings.SetInitializer(System.Action{Community.OData.Linq.ODataSettings})">
+            <summary>
+            Sets the action which will be used to initialize every instance of <type ref="ODataSettings"></type>.
+            </summary>
+            <param name="initializer">The action which will be used to initialize every instance of <type ref="ODataSettings"></type>.</param>
+            <exception cref="T:System.ArgumentNullException">initializer</exception>
+            <exception cref="T:System.InvalidOperationException">SetInitializer</exception>
+        </member>
+        <member name="T:Community.OData.Linq.OData.SelectExpandHelper`1">
+            <summary>
+            Added code
+            </summary>
+            <typeparam name="T"></typeparam>
         </member>
     </members>
 </doc>
