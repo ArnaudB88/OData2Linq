@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\OData2Linq\OData2Linq.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.OData\Microsoft.AspNetCore.OData.csproj" />
   </ItemGroup>
 
 </Project>
