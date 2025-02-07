@@ -8,6 +8,10 @@
     using System.Linq;
     using System.Linq.Expressions;
 
+    /// <summary>
+    /// Ook gebruikt
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class ODataQuery<T> : IQueryable<T>
     {
         internal ODataQuery(IQueryable inner, IServiceProvider serviceProvider)

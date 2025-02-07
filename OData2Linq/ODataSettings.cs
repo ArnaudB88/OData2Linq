@@ -3,9 +3,13 @@
     using Microsoft.AspNetCore.OData.Query;
     using Microsoft.AspNetCore.OData.Query.Validator;
     using Microsoft.OData.ModelBuilder.Config;
+    //using Community.OData.Linq.OData.Query;
     using Microsoft.OData.UriParser;
     using System;
 
+    /// <summary>
+    /// Ook gebruikt
+    /// </summary>
     public class ODataSettings
     {
         private static readonly object SyncObj = new object();
