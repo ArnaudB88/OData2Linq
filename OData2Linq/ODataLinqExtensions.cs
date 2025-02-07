@@ -1,19 +1,9 @@
-﻿namespace Community.OData.Linq
+﻿namespace OData2Linq
 {
-    using Community.OData.Linq.OData;
-    using Community.OData.Linq.OData.Query;
     using Microsoft.AspNetCore.OData.Query;
     using Microsoft.AspNetCore.OData.Query.Expressions;
     using Microsoft.AspNetCore.OData.Query.Validator;
     using Microsoft.AspNetCore.OData.Query.Wrapper;
-    //using Community.OData.Linq.Builder;
-    //using Community.OData.Linq.Builder.Validators;
-    //using Community.OData.Linq.Common;
-    //using Community.OData.Linq.OData;
-    //using Community.OData.Linq.OData.Query;
-    //using Community.OData.Linq.OData.Query.Expressions;
-    //using Community.OData.Linq.Properties;
-
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.OData;
     using Microsoft.OData.Edm;
@@ -27,10 +17,6 @@
     using System.Diagnostics.Contracts;
     using System.Linq;
 
-    /// <summary>
-    /// Entry class
-    /// Hier zo veel mogelijk originele referenties gebruiken
-    /// </summary>
     public static class ODataLinqExtensions
     {
         /// <summary>

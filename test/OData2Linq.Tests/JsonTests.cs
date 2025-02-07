@@ -1,4 +1,4 @@
-﻿namespace Community.OData.Linq.xTests
+﻿namespace OData2Linq
 {
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;

@@ -1,4 +1,4 @@
-﻿namespace Community.OData.Linq
+﻿namespace OData2Linq
 {
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.OData.Edm;
@@ -8,10 +8,6 @@
     using System.Linq;
     using System.Linq.Expressions;
 
-    /// <summary>
-    /// Ook gebruikt
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
     public class ODataQuery<T> : IQueryable<T>
     {
         internal ODataQuery(IQueryable inner, IServiceProvider serviceProvider)

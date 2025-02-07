@@ -1,7 +1,7 @@
 ﻿
-namespace Community.OData.Linq.xTests
+namespace OData2Linq
 {
-    using Community.OData.Linq.xTests.SampleData;
+    using OData2Linq.SampleData;
     using Microsoft.AspNetCore.OData.Query;
     using System;
     using System.Linq;

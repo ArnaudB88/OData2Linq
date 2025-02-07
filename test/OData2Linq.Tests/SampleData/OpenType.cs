@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Community.OData.Linq.xTests.SampleData
+namespace OData2Linq.SampleData
 {
     public class OpenType
     {

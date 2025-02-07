@@ -1,4 +1,4 @@
-﻿namespace Community.OData.Linq.xTests.SampleData
+﻿namespace OData2Linq.SampleData
 {
     using System.Collections.Generic;
     using System.Linq;

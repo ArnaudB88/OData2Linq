@@ -1,12 +1,9 @@
-﻿using Community.OData.Linq.xTests.SampleData;
-
-using System;
-using System.Linq;
+﻿using OData2Linq.SampleData;
 
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Community.OData.Linq.xTests
+namespace OData2Linq
 {
     public class DateTimeFilterTests
     {

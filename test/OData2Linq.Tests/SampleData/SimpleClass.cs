@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Serialization;
 
-namespace Community.OData.Linq.xTests.SampleData
+namespace OData2Linq.SampleData
 {
     using Microsoft.OData.ModelBuilder;
     using System;

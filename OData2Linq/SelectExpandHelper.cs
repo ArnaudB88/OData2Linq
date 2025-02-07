@@ -1,9 +1,7 @@
-﻿namespace Community.OData.Linq.OData
+﻿namespace OData2Linq
 {
     using Microsoft.AspNetCore.OData.Edm;
     using Microsoft.AspNetCore.OData.Query;
-    //using Community.OData.Linq.OData.Formatter;
-    //using Community.OData.Linq.OData.Query;
 
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.OData.Edm;
@@ -13,10 +11,6 @@
     using System.Globalization;
     using System.Linq;
 
-    /// <summary>
-    /// Added code
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
     public class SelectExpandHelper<T>
     {
         private readonly ODataQuery<T> query;

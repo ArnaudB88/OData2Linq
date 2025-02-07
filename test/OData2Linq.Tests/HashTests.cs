@@ -2,7 +2,7 @@
 
 using Xunit;
 
-namespace Community.OData.Linq.xTests
+namespace OData2Linq
 {
     public class HashTests
     {

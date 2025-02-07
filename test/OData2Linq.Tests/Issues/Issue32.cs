@@ -1,4 +1,4 @@
-﻿//namespace Community.OData.Linq.xTests.Issues29
+﻿//namespace OData2Linq.Issues29
 //{
 //    using System;
 //    using System.Linq;

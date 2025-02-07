@@ -1,4 +1,4 @@
-﻿namespace Community.OData.Linq.OData.Query
+﻿namespace OData2Linq
 {
     using Microsoft.AspNetCore.OData;
     using Microsoft.AspNetCore.OData.Query;

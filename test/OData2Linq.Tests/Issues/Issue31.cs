@@ -1,7 +1,7 @@
 ﻿
-namespace Community.OData.Linq.xTests.Issues
+namespace OData2Linq.Issues
 {
-    using Community.OData.Linq.xTests.SampleData;
+    using OData2Linq.SampleData;
     using System.Linq;
     using Xunit;
 
