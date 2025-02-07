@@ -9,6 +9,8 @@ namespace Community.OData.Linq.xTests.SampleData
 
     public class SimpleClass
     {
+        public const int NumberOfProperties = 9;
+
         private static readonly SimpleClass[] items =
         {
             new SimpleClass {

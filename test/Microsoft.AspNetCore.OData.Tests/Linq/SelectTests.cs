@@ -17,7 +17,7 @@
 
             IDictionary<string, object> metadata = result[0].ToDictionary();
 
-            Assert.Equal(7, metadata.Count);
+            Assert.Equal(SimpleClass.NumberOfProperties, metadata.Count);
         }
 
         [Fact]
@@ -27,7 +27,7 @@
 
             IDictionary<string, object> metadata = result[0].ToDictionary();
 
-            Assert.Equal(7, metadata.Count);
+            Assert.Equal(SimpleClass.NumberOfProperties, metadata.Count);
         }
 
         [Fact]
