@@ -14988,12 +14988,6 @@
         <member name="M:Microsoft.AspNetCore.OData.Routing.Template.ValueSegmentTemplate.TryTranslate(Microsoft.AspNetCore.OData.Routing.Template.ODataTemplateTranslateContext)">
             <inheritdoc />
         </member>
-        <member name="T:Community.OData.Linq.ODataLinqExtensions">
-            <summary>
-            Entry class
-            Hier zo veel mogelijk originele referenties gebruiken
-            </summary>
-        </member>
         <member name="F:Community.OData.Linq.ODataLinqExtensions.SimplifiedOptions">
             <summary>
             The simplified options.
@@ -15151,17 +15145,6 @@
             <exception cref="T:System.ArgumentNullException">
             Argument Null Exception
             </exception>
-        </member>
-        <member name="T:Community.OData.Linq.ODataQuery`1">
-            <summary>
-            Ook gebruikt
-            </summary>
-            <typeparam name="T"></typeparam>
-        </member>
-        <member name="T:Community.OData.Linq.ODataSettings">
-            <summary>
-            Ook gebruikt
-            </summary>
         </member>
         <member name="M:Community.OData.Linq.ODataSettings.SetInitializer(System.Action{Community.OData.Linq.ODataSettings})">
             <summary>
