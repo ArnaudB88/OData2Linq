@@ -8,6 +8,11 @@
     <AssemblyOriginatorKeyFile>FriendAssemblies.snk</AssemblyOriginatorKeyFile>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Version>0.0.4</Version>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/ArnaudB88/OData2Linq</RepositoryUrl>
+    <Title>Apply an OData filter text query to an IQueryable expression</Title>
+    <PackageTags>odata;filter;linq</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,5 +28,12 @@
 
  <ItemGroup>
     <None Include="$(OutputPath)Microsoft.AspNetCore.OData.dll" Pack="true" PackagePath="lib\$(TargetFramework)"></None>
+ </ItemGroup>
+
+ <ItemGroup>
+   <None Update="README.md">
+     <Pack>True</Pack>
+     <PackagePath>\</PackagePath>
+   </None>
  </ItemGroup>
 </Project>
