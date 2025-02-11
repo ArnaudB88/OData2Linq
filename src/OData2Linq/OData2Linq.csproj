@@ -9,7 +9,7 @@
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Version>0.0.5</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageReadmeFile>README-odata2linq.md</PackageReadmeFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/ArnaudB88/OData2Linq</RepositoryUrl>
     <Title>Apply an OData filter text query to an IQueryable expression</Title>
     <PackageTags>odata;filter;linq</PackageTags>
@@ -28,7 +28,7 @@
 
  <ItemGroup>
     <None Include="$(OutputPath)Microsoft.AspNetCore.OData.dll" Pack="true" PackagePath="lib\$(TargetFramework)"></None>
-    <None Include="..\..\README-odata2linq.md" Link="README-odata2linq.md">
+    <None Include="..\..\.github\README.md" Link="README.md">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
