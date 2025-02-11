@@ -1,13 +1,9 @@
-﻿namespace OData2Linq
+﻿namespace OData2Linq.Tests
 {
+    using OData2Linq.Tests.SampleData;
     using System;
     using System.Collections.Generic;
     using System.Linq;
-
-    using OData2Linq.SampleData;
-
-    using Microsoft.OData;
-
     using Xunit;
 
     public class ODataTests

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OData2Linq.SampleData
+namespace OData2Linq.Tests.SampleData
 {
     /// <summary>
     /// A utility class for use in ODataTests

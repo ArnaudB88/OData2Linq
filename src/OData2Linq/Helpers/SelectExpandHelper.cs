@@ -1,4 +1,4 @@
-﻿namespace OData2Linq
+﻿namespace OData2Linq.Helpers
 {
     using Microsoft.AspNetCore.OData.Edm;
     using Microsoft.AspNetCore.OData.Query;
@@ -11,7 +11,7 @@
     using System.Globalization;
     using System.Linq;
 
-    public class SelectExpandHelper<T>
+    internal class SelectExpandHelper<T>
     {
         private readonly ODataQuery<T> query;
 
@@ -23,30 +23,30 @@
 
         public SelectExpandHelper(ODataRawQueryOptions rawQueryOptions, ODataQuery<T> query, string entitySetName)
         {
-            this.Context = new ODataQueryContext(query.EdmModel, query.ElementType, null);
-            this.Context.RequestContainer = query.ServiceProvider;
+            Context = new ODataQueryContext(query.EdmModel, query.ElementType, null);
+            Context.RequestContainer = query.ServiceProvider;
             this.query = query;
             this.entitySetName = entitySetName;
-            this.RawValues = rawQueryOptions ?? throw new ArgumentNullException(nameof(rawQueryOptions));
-            if (this.RawValues.Select != null || this.RawValues.Expand != null)
+            RawValues = rawQueryOptions ?? throw new ArgumentNullException(nameof(rawQueryOptions));
+            if (RawValues.Select != null || RawValues.Expand != null)
             {
                 Dictionary<string, string> raws = new Dictionary<string, string>();
-                if (this.RawValues.Select != null)
+                if (RawValues.Select != null)
                 {
-                    raws["$select"] = this.RawValues.Select;
+                    raws["$select"] = RawValues.Select;
                 }
 
-                if (this.RawValues.Expand != null)
+                if (RawValues.Expand != null)
                 {
-                    raws["$expand"] = this.RawValues.Expand;
+                    raws["$expand"] = RawValues.Expand;
                 }
 
                 ODataQueryOptionParser parser = ODataLinqExtensions.GetParser(this.query, this.entitySetName, raws);
 
-                this.SelectExpand = new SelectExpandQueryOption(
-                    this.RawValues.Select,
-                    this.RawValues.Expand,
-                    this.Context,
+                SelectExpand = new SelectExpandQueryOption(
+                    RawValues.Select,
+                    RawValues.Expand,
+                    Context,
                     parser);
             }
         }
@@ -86,18 +86,18 @@
             if (containsAutoSelectExpandProperties)
             {
                 ODataQueryOptionParser parser = ODataLinqExtensions.GetParser(
-                    this.query,
-                    this.entitySetName,
+                    query,
+                    entitySetName,
                     queryParameters);
-                var originalSelectExpand = this.SelectExpand;
-                this.SelectExpand = new SelectExpandQueryOption(
+                var originalSelectExpand = SelectExpand;
+                SelectExpand = new SelectExpandQueryOption(
                     autoSelectRawValue,
                     autoExpandRawValue,
-                    this.Context,
+                    Context,
                     parser);
                 if (originalSelectExpand != null && originalSelectExpand.LevelsMaxLiteralExpansionDepth > 0)
                 {
-                    this.SelectExpand.LevelsMaxLiteralExpansionDepth =
+                    SelectExpand.LevelsMaxLiteralExpansionDepth =
                         originalSelectExpand.LevelsMaxLiteralExpansionDepth;
                 }
             }
@@ -106,9 +106,9 @@
         public IQueryable Apply(ODataQuery<T> query)
         {
             IQueryable result = query;
-            if (this.SelectExpand != null)
+            if (SelectExpand != null)
             {
-                var tempResult = this.ApplySelectExpand(
+                var tempResult = ApplySelectExpand(
                     result,
                     (ODataQuerySettings)query.ServiceProvider.GetService(typeof(ODataQuerySettings)));
                 if (tempResult != default(IQueryable))
@@ -124,14 +124,14 @@
         {
             var result = default(TSelect);
 
-            SelectExpandClause processedClause = this.SelectExpand.ProcessLevels();
+            SelectExpandClause processedClause = SelectExpand.ProcessLevels();
             SelectExpandQueryOption newSelectExpand = new SelectExpandQueryOption(
-                this.SelectExpand.RawSelect,
-                this.SelectExpand.RawExpand,
-                this.SelectExpand.Context,
+                SelectExpand.RawSelect,
+                SelectExpand.RawExpand,
+                SelectExpand.Context,
                 processedClause);
 
-            ODataSettings qsettings = this.Context.RequestContainer.GetRequiredService<ODataSettings>();
+            ODataSettings qsettings = Context.RequestContainer.GetRequiredService<ODataSettings>();
 
             newSelectExpand.Validate(qsettings.ValidationSettings);
 

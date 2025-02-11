@@ -1,10 +1,8 @@
-﻿
-
-namespace OData2Linq
+﻿namespace OData2Linq.Tests
 {
-    using OData2Linq.SampleData;
-    using Xunit;
+    using OData2Linq.Tests.SampleData;
     using System.Linq;
+    using Xunit;
 
     public class FilterFunctionsTests
     {

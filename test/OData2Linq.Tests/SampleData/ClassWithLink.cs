@@ -1,4 +1,4 @@
-﻿namespace OData2Linq.SampleData
+﻿namespace OData2Linq.Tests.SampleData
 {
     using Microsoft.OData.ModelBuilder;
     using System.Linq;

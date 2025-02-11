@@ -1,7 +1,6 @@
 ﻿using Microsoft.OData.ModelBuilder;
-using System.Linq;
 
-namespace OData2Linq.SampleData
+namespace OData2Linq.Tests.SampleData
 {
     public class ClassWithDeepNavigation
     {

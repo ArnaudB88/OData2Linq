@@ -7,7 +7,7 @@
 //using Xunit;
 //using Community.OData.Linq.Json;
 
-//namespace OData2Linq.Issues29
+//namespace OData2Linq.Tests.Issues29
 //{
 //    using Microsoft.AspNetCore.OData.Query.Wrapper;
 //    using System.Diagnostics;

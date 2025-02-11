@@ -1,8 +1,8 @@
-﻿namespace OData2Linq
+﻿namespace OData2Linq.Tests
 {
     using Microsoft.AspNetCore.OData.Query.Wrapper;
     using Microsoft.OData;
-    using OData2Linq.SampleData;
+    using OData2Linq.Tests.SampleData;
     using System.Collections.Generic;
     using System.Linq;
     using Xunit;

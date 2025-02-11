@@ -1,8 +1,6 @@
-﻿using System;
+﻿using Xunit;
 
-using Xunit;
-
-namespace OData2Linq
+namespace OData2Linq.Tests
 {
     public class HashTests
     {

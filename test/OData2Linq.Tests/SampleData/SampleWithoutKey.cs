@@ -1,4 +1,4 @@
-﻿namespace OData2Linq.SampleData
+﻿namespace OData2Linq.Tests.SampleData
 {
     using System;
     using System.Linq;

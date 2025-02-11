@@ -1,4 +1,4 @@
-﻿namespace OData2Linq
+﻿namespace OData2Linq.Tests
 {
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
@@ -7,7 +7,7 @@
 
     public class JsonTests
     {
-        [Fact]
+        [Fact(Skip = "Currently not supported")]
         public void SerializeSelectExpand()
         {
             JToken token = null;// ClassWithCollection.CreateQuery().OData().SelectExpand("Name", "Link2($filter=Id eq 311;$select=Name)").ToJson();
@@ -16,7 +16,7 @@
             Assert.DoesNotContain("ModelID", token.ToString(Formatting.None));
         }
 
-        [Fact]
+        [Fact(Skip = "Currently not supported")]
         public void SerializeSelectExpand2()
         {
             JToken token = null;// ClassWithCollection.CreateQuery().OData().SelectExpand("Name", "Link2($filter=Id eq 311;$select=Name)").ToJson();

@@ -1,12 +1,8 @@
-﻿namespace OData2Linq
+﻿namespace OData2Linq.Tests
 {
-    using System.Collections;
-    using System.Linq;
-
-    using OData2Linq.SampleData;
-
     using Microsoft.OData;
-
+    using OData2Linq.Tests.SampleData;
+    using System.Linq;
     using Xunit;
 
     public class TopSkipTests

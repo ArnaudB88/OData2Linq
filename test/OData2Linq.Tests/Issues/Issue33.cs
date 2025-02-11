@@ -1,6 +1,6 @@
 // Issue 33 : Recursive loop of complex types
 
-namespace OData2Linq.Issues33
+namespace OData2Linq.Tests.Issues33
 {
     using System;
     using System.Linq;

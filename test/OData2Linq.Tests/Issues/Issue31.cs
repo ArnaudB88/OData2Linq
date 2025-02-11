@@ -1,7 +1,7 @@
 ﻿
-namespace OData2Linq.Issues
+namespace OData2Linq.Tests.Issues
 {
-    using OData2Linq.SampleData;
+    using OData2Linq.Tests.SampleData;
     using System.Linq;
     using Xunit;
 

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace OData2Linq.SampleData
+﻿namespace OData2Linq.Tests.SampleData
 {
     public class OpenType
     {

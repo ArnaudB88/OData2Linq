@@ -10,6 +10,7 @@
     using Microsoft.OData.ModelBuilder;
     using Microsoft.OData.ModelBuilder.Config;
     using Microsoft.OData.UriParser;
+    using OData2Linq.Helpers;
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
@@ -31,21 +32,11 @@
         /// <summary>
         /// Enable applying OData specific functions to query
         /// </summary>
-        /// <param name="query">
-        /// The query.
-        /// </param>
-        /// <param name="configuration">
-        /// The configuration action.
-        /// </param>
-        /// <param name="edmModel">
-        /// The edm model.
-        /// </param>
-        /// <typeparam name="T">        
-        /// The query type param
-        /// </typeparam>
-        /// <returns>
-        /// The OData aware <see cref="ODataQuery{T}"/> query.
-        /// </returns>
+        /// <param name="query">The query.</param>
+        /// <param name="configuration">The configuration action.</param>
+        /// <param name="edmModel">The edm model.</param>
+        /// <typeparam name="T">The query type param</typeparam>
+        /// <returns>The OData aware <see cref="ODataQuery{T}"/> query.</returns>
         public static ODataQuery<T> OData<T>(this IQueryable<T> query, Action<ODataSettings> configuration = null, IEdmModel edmModel = null)
         {
             if (query == null) throw new ArgumentNullException(nameof(query));
@@ -105,32 +96,15 @@
             return dataQuery;
         }
 
-        /// <summary>
-        /// Apply select and expand query options.
-        /// </summary>
-        /// <param name="query">
-        /// The OData aware query.
-        /// </param>
-        /// <param name="selectText">
-        /// The $select parameter text.
-        /// </param>
-        /// <param name="expandText">
-        /// The $expand parameter text.
-        /// </param>
-        /// <param name="entitySetName">
-        /// The entity set name.
-        /// </param>
-        /// <typeparam name="T">
-        /// The query type param
-        /// </typeparam>
-        /// <returns>
-        /// The <see cref="IEnumerable{ISelectExpandWrapper}"/> selection result in specific format.
-        /// </returns>
-        public static IEnumerable<ISelectExpandWrapper> SelectExpand<T>(
-            this ODataQuery<T> query,
-            string selectText = null,
-            string expandText = null,
-            string entitySetName = null)
+        /// <summary>Apply select and expand query options.</summary>
+        /// <param name="query">The OData aware query.</param>
+        /// <param name="selectText">The $select parameter text.</param>
+        /// <param name="expandText">The $expand parameter text.</param>
+        /// <param name="entitySetName">The entity set name.</param>
+        /// <typeparam name="T">The query type param</typeparam>
+        /// <returns>The <see cref="IEnumerable{ISelectExpandWrapper}"/> selection result in specific format.</returns>
+        public static IEnumerable<ISelectExpandWrapper> SelectExpand<T>(this ODataQuery<T> query,
+            string selectText = null, string expandText = null, string entitySetName = null)
         {
             var result = SelectExpandInternal(query, selectText, expandText, entitySetName);
 
@@ -140,36 +114,20 @@
         /// <summary>
         /// Apply select and expand query options to query. Warning! not all query providers support it.
         /// </summary>
-        /// <param name="query">
-        /// The OData aware query.
-        /// </param>
-        /// <param name="selectText">
-        /// The $select parameter text.
-        /// </param>
-        /// <param name="expandText">
-        /// The $expand parameter text.
-        /// </param>
-        /// <param name="entitySetName">
-        /// The entity set name.
-        /// </param>
-        /// <typeparam name="T">
-        /// The query type param
-        /// </typeparam>
-        /// <returns>
-        /// The <see cref="IQueryable{ISelectExpandWrapper}"/> selection result in specific format.
-        /// </returns>
-        public static IQueryable<ISelectExpandWrapper> SelectExpandAsQueryable<T>(
-            this ODataQuery<T> query,
-            string selectText = null,
-            string expandText = null,
-            string entitySetName = null)
+        /// <param name="query">The OData aware query.</param>
+        /// <param name="selectText">The $select parameter text.</param>
+        /// <param name="expandText">The $expand parameter text.</param>
+        /// <param name="entitySetName">The entity set name.</param>
+        /// <typeparam name="T">The query type param</typeparam>
+        /// <returns>The <see cref="IQueryable{ISelectExpandWrapper}"/> selection result in specific format.</returns>
+        public static IQueryable<ISelectExpandWrapper> SelectExpandAsQueryable<T>(this ODataQuery<T> query,
+            string selectText = null, string expandText = null, string entitySetName = null)
         {
             IQueryable result = SelectExpandInternal(query, selectText, expandText, entitySetName);
             return query.Provider.CreateQuery<ISelectExpandWrapper>(result.Expression);
         }
 
-        private static IQueryable SelectExpandInternal<T>(ODataQuery<T> query, string selectText, string expandText,
-            string entitySetName)
+        private static IQueryable SelectExpandInternal<T>(ODataQuery<T> query, string selectText, string expandText, string entitySetName)
         {
             SelectExpandHelper<T> helper = new SelectExpandHelper<T>(
                 new ODataRawQueryOptions { Select = selectText, Expand = expandText },
@@ -303,10 +261,7 @@
 
             if (rawQueryOptions.Filter != null)
             {
-                //foreach (string filter in rawQueryOptions.Filters)
-                //{
                 query = query.Filter(rawQueryOptions.Filter, entitySetName);
-                //}
             }
 
             if (rawQueryOptions.OrderBy != null)
@@ -322,24 +277,12 @@
         /// <summary>
         /// Apply $filter parameter to query.
         /// </summary>
-        /// <param name="query">
-        /// The OData aware query.
-        /// </param>
-        /// <param name="filterText">
-        /// The $filter parameter text.
-        /// </param>
-        /// <param name="entitySetName">
-        /// The entity set name.
-        /// </param>
-        /// <typeparam name="T">
-        /// The query type param
-        /// </typeparam>
-        /// <returns>
-        /// The <see cref="ODataQuery{T}"/> query with applied filter parameter.
-        /// </returns>
-        /// <exception cref="ArgumentNullException">
-        /// Argument Null Exception
-        /// </exception>
+        /// <param name="query"> The OData aware query. </param>
+        /// <param name="filterText"> The $filter parameter text. </param>
+        /// <param name="entitySetName"> The entity set name. </param>
+        /// <typeparam name="T"> The query type param </typeparam>
+        /// <returns> The <see cref="ODataQuery{T}"/> query with applied filter parameter. </returns>
+        /// <exception cref="ArgumentNullException">Argument Null Exception </exception>
         public static ODataQuery<T> Filter<T>(this ODataQuery<T> query, string filterText, string entitySetName = null)
         {
             if (query == null) throw new ArgumentNullException(nameof(query));
@@ -361,15 +304,6 @@
             filterClause = new FilterClause(filterExpression, filterClause.RangeVariable);
             Contract.Assert(filterClause != null);
 
-            //OLD
-            //var validator = new FilterQueryValidator(settings.DefaultQuerySettings);
-            //validator.Validate(filterClause, settings.ValidationSettings, edmModel);
-
-            //Expression filter = FilterBinder.Bind(query, filterClause, typeof(T), query.ServiceProvider);
-            //var result = ExpressionHelpers.Where(query, filter, typeof(T));
-            //
-
-            //NEW
             var queryContext = new ODataQueryContext(edmModel, query.ElementType)
             {
                 RequestContainer = query.ServiceProvider
@@ -378,6 +312,7 @@
             var option = new FilterQueryOption(queryContext, filterClause);
             validator2.Validate(option, settings.ValidationSettings);
 
+            //TODO: check alternative
             //var binder = query.ServiceProvider.GetRequiredService<FilterBinder>();
             //QueryBinderContext context = new QueryBinderContext(edmModel, query.ServiceProvider.GetRequiredService<ODataQuerySettings>(), query.ElementType)
             //{
@@ -392,27 +327,13 @@
             return new ODataQuery<T>(result3, query.ServiceProvider);
         }
 
-        /// <summary>
-        /// Apply $orderby parameter to query.
-        /// </summary>
-        /// <param name="query">
-        /// The OData aware query.
-        /// </param>
-        /// <param name="orderbyText">
-        /// The $orderby parameter text.
-        /// </param>
-        /// <param name="entitySetName">
-        /// The entity set name.
-        /// </param>
-        /// <typeparam name="T">
-        /// The query type param
-        /// </typeparam>
-        /// <returns>
-        /// The <see cref="ODataQuery{T}"/> query with applied order by parameter.
-        /// </returns>
-        /// <exception cref="ArgumentNullException">
-        /// Argument Null Exception
-        /// </exception>
+        /// <summary>Apply $orderby parameter to query.</summary>
+        /// <param name="query">The OData aware query.</param>
+        /// <param name="orderbyText">The $orderby parameter text.</param>
+        /// <param name="entitySetName">The entity set name.</param>
+        /// <typeparam name="T">The query type param</typeparam>
+        /// <returns>The <see cref="ODataQuery{T}"/> query with applied order by parameter.</returns>
+        /// <exception cref="ArgumentNullException">Argument Null Exception</exception>
         public static ODataQueryOrdered<T> OrderBy<T>(this ODataQuery<T> query, string orderbyText, string entitySetName = null)
         {
             if (query == null) throw new ArgumentNullException(nameof(query));
@@ -433,12 +354,6 @@
 
             ICollection<OrderByNode> nodes = OrderByNode.CreateCollection(orderByClause);
 
-            //OLD
-            //var validator = new OrderByQueryValidator(settings.DefaultQuerySettings);
-            //validator.Validate(nodes, settings.ValidationSettings, edmModel);
-            //IOrderedQueryable<T> result = (IOrderedQueryable<T>)OrderByBinder.OrderApplyToCore(query, settings.QuerySettings, nodes, edmModel);
-
-            //NEW
             var queryContext = new ODataQueryContext(edmModel, query.ElementType)
             {
                 RequestContainer = query.ServiceProvider
@@ -447,6 +362,7 @@
             var option = new OrderByQueryOption(orderbyText, queryContext, queryOptionParser);
             validator2.Validate(option, settings.ValidationSettings);
 
+            //TODO: check alternative
             //var binder = new OrderByBinder();
             //QueryBinderContext context = new QueryBinderContext(edmModel, query.ServiceProvider.GetRequiredService<ODataQuerySettings>(), typeof(T))
             //{
@@ -455,8 +371,6 @@
             //};
             //var orderbyResult = binder.BindOrderBy(option.OrderByClause, context);
             var result2 = option.ApplyTo<T>(query, query.ServiceProvider.GetRequiredService<ODataQuerySettings>());
-
-            //return result2;
 
             return new ODataQueryOrdered<T>(result2, query.ServiceProvider);
         }

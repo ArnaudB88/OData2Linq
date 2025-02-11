@@ -1,12 +1,9 @@
-﻿using System.Linq;
-using OData2Linq.SampleData;
-using Microsoft.OData;
+﻿using Microsoft.OData;
+using OData2Linq.Tests.SampleData;
 using Xunit;
 
-namespace OData2Linq
+namespace OData2Linq.Tests
 {
-    using System;
-
     public class OrderByTests
     {
         [Fact]

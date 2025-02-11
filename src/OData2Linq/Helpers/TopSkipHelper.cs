@@ -1,11 +1,11 @@
-﻿namespace OData2Linq
+﻿namespace OData2Linq.Helpers
 {
     using Microsoft.AspNetCore.OData;
     using Microsoft.AspNetCore.OData.Query;
     using Microsoft.OData;
     using System.Linq;
 
-    public class TopSkipHelper
+    internal class TopSkipHelper
     {
         public static IQueryable<T> ApplyTopWithValidation<T>(IQueryable<T> query, long? top, ODataSettings settings)
         {

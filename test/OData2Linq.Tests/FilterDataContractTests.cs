@@ -1,8 +1,8 @@
 ﻿using Microsoft.OData;
 
-namespace OData2Linq
+namespace OData2Linq.Tests
 {
-    using OData2Linq.SampleData;
+    using OData2Linq.Tests.SampleData;
     using System.Linq;
     using Xunit;
 
