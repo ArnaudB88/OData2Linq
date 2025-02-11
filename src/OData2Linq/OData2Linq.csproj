@@ -9,7 +9,7 @@
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Version>0.0.5</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageReadmeFile>README-odata2linq.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/ArnaudB88/OData2Linq</RepositoryUrl>
     <Title>Apply an OData filter text query to an IQueryable expression</Title>
     <PackageTags>odata;filter;linq</PackageTags>
@@ -20,20 +20,17 @@
     <PackageReference Include="Microsoft.OData.Core" Version="7.15.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\src\Microsoft.AspNetCore.OData\Microsoft.AspNetCore.OData.csproj">
-      <PrivateAssets>All</PrivateAssets>
-    </ProjectReference>
-  </ItemGroup>
-
  <ItemGroup>
-    <None Include="$(OutputPath)Microsoft.AspNetCore.OData.dll" Pack="true" PackagePath="lib\$(TargetFramework)"></None>
+   <ProjectReference Include="..\Microsoft.AspNetCore.OData\Microsoft.AspNetCore.OData.csproj">
+     <PrivateAssets>All</PrivateAssets>
+   </ProjectReference>
  </ItemGroup>
 
  <ItemGroup>
-   <None Update="README.md">
-     <Pack>True</Pack>
-     <PackagePath>\</PackagePath>
-   </None>
+    <None Include="$(OutputPath)Microsoft.AspNetCore.OData.dll" Pack="true" PackagePath="lib\$(TargetFramework)"></None>
+    <None Include="..\..\README-odata2linq.md" Link="README-odata2linq.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
  </ItemGroup>
 </Project>
