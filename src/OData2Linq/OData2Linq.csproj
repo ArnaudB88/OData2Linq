@@ -32,5 +32,6 @@
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
+    <None Include="..\..\.github\workflows\odata2linq-ci.yml" Link="odata2linq-ci.yml" />
  </ItemGroup>
 </Project>
