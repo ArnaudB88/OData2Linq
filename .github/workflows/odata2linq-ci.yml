@@ -24,8 +24,8 @@ jobs:
       with:
         dotnet-version: ${{ matrix.dotnet-version }}
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore AspNetCoreOData.sln
     - name: Build
-      run: dotnet build --no-restore
+      run: dotnet build AspNetCoreOData.sln --no-restore
     - name: Test
-      run: dotnet test --no-build --verbosity normal
+      run: dotnet test AspNetCoreOData.sln --no-build --verbosity normal
