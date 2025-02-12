@@ -12,34 +12,34 @@
     {
         internal ODataQuery(IQueryable inner, IServiceProvider serviceProvider)
         {
-            this.Inner = inner ?? throw new ArgumentNullException(nameof(inner));
-            this.ServiceProvider = serviceProvider;
+            Inner = inner ?? throw new ArgumentNullException(nameof(inner));
+            ServiceProvider = serviceProvider;
         }
 
-        public IEdmModel EdmModel => this.ServiceProvider.GetRequiredService<IEdmModel>();
+        public IEdmModel EdmModel => ServiceProvider.GetRequiredService<IEdmModel>();
 
-        public Type ElementType => this.Inner.ElementType;
+        public Type ElementType => Inner.ElementType;
 
-        public Expression Expression => this.Inner.Expression;
+        public Expression Expression => Inner.Expression;
 
-        public IQueryProvider Provider => this.Inner.Provider;
+        public IQueryProvider Provider => Inner.Provider;
 
         public IQueryable Inner { get; }
         public IServiceProvider ServiceProvider { get; }
 
         public IEnumerator GetEnumerator()
         {
-            return this.Inner.GetEnumerator();
+            return Inner.GetEnumerator();
         }
 
         IEnumerator<T> IEnumerable<T>.GetEnumerator()
         {
-            return (IEnumerator<T>)this.Inner.GetEnumerator();
+            return (IEnumerator<T>)Inner.GetEnumerator();
         }
 
         public IQueryable<T> ToOriginalQuery()
         {
-            return (IQueryable<T>)this.Inner;
+            return (IQueryable<T>)Inner;
         }
     }
 }

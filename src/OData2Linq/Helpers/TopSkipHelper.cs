@@ -14,29 +14,15 @@
             {
                 if (top.Value > int.MaxValue)
                 {
-                    throw new ODataException(
-                        Error.Format(
-                            SRResources.SkipTopLimitExceeded,
-                            int.MaxValue,
-                            AllowedQueryOptions.Top,
-                            top.Value));
+                    throw new ODataException(Error.Format(SRResources.SkipTopLimitExceeded, int.MaxValue, AllowedQueryOptions.Top, top.Value));
                 }
 
                 if (top.Value > settings.ValidationSettings.MaxTop)
                 {
-                    throw new ODataException(
-                        Error.Format(
-                            SRResources.SkipTopLimitExceeded,
-                            settings.ValidationSettings.MaxTop,
-                            AllowedQueryOptions.Top,
-                            top.Value));
+                    throw new ODataException(Error.Format(SRResources.SkipTopLimitExceeded, settings.ValidationSettings.MaxTop, AllowedQueryOptions.Top, top.Value));
                 }
 
-                IQueryable<T> result = ExpressionHelpers.Take(
-                                           query,
-                                           (int)top.Value,
-                                           typeof(T),
-                                           settings.QuerySettings.EnableConstantParameterization) as IQueryable<T>;
+                IQueryable<T> result = ExpressionHelpers.Take(query, (int)top.Value, typeof(T), settings.QuerySettings.EnableConstantParameterization) as IQueryable<T>;
 
                 return result;
             }
@@ -50,29 +36,15 @@
             {
                 if (skip.Value > int.MaxValue)
                 {
-                    throw new ODataException(
-                        Error.Format(
-                            SRResources.SkipTopLimitExceeded,
-                            int.MaxValue,
-                            AllowedQueryOptions.Skip,
-                            skip.Value));
+                    throw new ODataException(Error.Format(SRResources.SkipTopLimitExceeded, int.MaxValue, AllowedQueryOptions.Skip, skip.Value));
                 }
 
                 if (skip.Value > settings.ValidationSettings.MaxSkip)
                 {
-                    throw new ODataException(
-                        Error.Format(
-                            SRResources.SkipTopLimitExceeded,
-                            settings.ValidationSettings.MaxSkip,
-                            AllowedQueryOptions.Skip,
-                            skip.Value));
+                    throw new ODataException(Error.Format(SRResources.SkipTopLimitExceeded, settings.ValidationSettings.MaxSkip, AllowedQueryOptions.Skip, skip.Value));
                 }
 
-                IQueryable<T> result = ExpressionHelpers.Skip(
-                    query,
-                    (int)skip.Value,
-                    typeof(T),
-                    settings.QuerySettings.EnableConstantParameterization) as IQueryable<T>;
+                IQueryable<T> result = ExpressionHelpers.Skip(query, (int)skip.Value, typeof(T), settings.QuerySettings.EnableConstantParameterization) as IQueryable<T>;
 
                 return result;
             }

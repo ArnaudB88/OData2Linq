@@ -142,7 +142,7 @@
         public void ExpandCollectionWithNotExpandable()
         {
             Assert.Throws<ODataException>(
-               () => SampleWithCustomKey.CreateQuery().OData().SelectExpand("Id", "NotExpandableLink"));
+               () => SampleWithCustomKey.CreateQuery().OData().SelectExpand(nameof(SampleWithCustomKey.Name), "NotExpandableLink"));
         }
 
         [Fact]
