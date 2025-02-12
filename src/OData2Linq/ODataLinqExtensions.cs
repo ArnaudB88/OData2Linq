@@ -11,6 +11,7 @@
     using Microsoft.OData.ModelBuilder.Config;
     using Microsoft.OData.UriParser;
     using OData2Linq.Helpers;
+    using OData2Linq.Settings;
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
@@ -65,7 +66,7 @@
 
             int settingsHash = HashCode.Combine(
                 settings.QuerySettings,
-                settings.DefaultQuerySettings,
+                settings.DefaultQueryConfigurations,
                 settings.ParserSettings.MaximumExpansionCount,
                 settings.ParserSettings.MaximumExpansionDepth,
                 settings.AllowRecursiveLoopOfComplexTypes);
@@ -75,8 +76,7 @@
                 ServiceContainer c = new ServiceContainer();
 
                 c.AddService(typeof(ODataQuerySettings), settings.QuerySettings);
-                c.AddService(typeof(DefaultQuerySettings), settings.DefaultQuerySettings);
-                c.AddService(typeof(SelectExpandQueryValidator), new SelectExpandQueryValidator());// settings.DefaultQuerySettings));
+                c.AddService(typeof(DefaultQueryConfigurations), settings.DefaultQueryConfigurations);
                 c.AddService(typeof(ODataSimplifiedOptions), SimplifiedOptions);
                 c.AddService(typeof(ODataUriParserSettings), settings.ParserSettings);
 
@@ -89,9 +89,7 @@
             container.AddService(typeof(ODataUriResolver), settings.Resolver ?? ODataSettings.DefaultResolver);
             container.AddService(typeof(ODataSettings), settings);
 
-            container.AddService(typeof(DefaultQueryConfigurations), settings.DefaultQueryConfigurations);
-
-            ODataQuery<T> dataQuery = new ODataQuery<T>(query, container);
+            var dataQuery = new ODataQuery<T>(query, container);
 
             return dataQuery;
         }

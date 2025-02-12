@@ -2,6 +2,7 @@
 
 namespace OData2Linq.Tests.Issues33
 {
+    using OData2Linq.Settings;
     using System;
     using System.Linq;
     using Xunit;

@@ -3,6 +3,7 @@
     using Microsoft.AspNetCore.OData;
     using Microsoft.AspNetCore.OData.Query;
     using Microsoft.OData;
+    using OData2Linq.Settings;
     using System.Linq;
 
     internal class TopSkipHelper

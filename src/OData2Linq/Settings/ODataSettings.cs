@@ -1,8 +1,6 @@
-﻿namespace OData2Linq
+﻿namespace OData2Linq.Settings
 {
-    using Microsoft.AspNetCore.OData.Query;
     using Microsoft.AspNetCore.OData.Query.Validator;
-    using Microsoft.OData.ModelBuilder.Config;
     using Microsoft.OData.UriParser;
     using System;
 
@@ -16,8 +14,8 @@
         /// Sets the action which will be used to initialize every instance of <type ref="ODataSettings"></type>.
         /// </summary>
         /// <param name="initializer">The action which will be used to initialize every instance of <type ref="ODataSettings"></type>.</param>
-        /// <exception cref="System.ArgumentNullException">initializer</exception>
-        /// <exception cref="System.InvalidOperationException">SetInitializer</exception>
+        /// <exception cref="ArgumentNullException">initializer</exception>
+        /// <exception cref="InvalidOperationException">SetInitializer</exception>
         public static void SetInitializer(Action<ODataSettings> initializer)
         {
             if (initializer == null) throw new ArgumentNullException(nameof(initializer));
@@ -39,7 +37,7 @@
 
         internal static ODataUriResolver DefaultResolver = new StringAsEnumResolver { EnableCaseInsensitive = true };
 
-        public ODataQuerySettings QuerySettings { get; } = new ODataQuerySettings { PageSize = 20 };
+        public ODataQuerySettingsHashable QuerySettings { get; } = new ODataQuerySettingsHashable { PageSize = 20 };
 
         public ODataValidationSettings ValidationSettings { get; } = new ODataValidationSettings();
 
@@ -52,16 +50,7 @@
         [Obsolete("Not supported anymore")]
         public bool AllowRecursiveLoopOfComplexTypes { get; set; } = false;
 
-        public DefaultQuerySettings DefaultQuerySettings { get; } =
-            new DefaultQuerySettings
-            {
-                EnableFilter = true,
-                EnableOrderBy = true,
-                EnableExpand = true,
-                EnableSelect = true,
-                MaxTop = 100
-            };
-        public DefaultQueryConfigurations DefaultQueryConfigurations { get; } = new DefaultQueryConfigurations
+        public DefaultQueryConfigurationsHashable DefaultQueryConfigurations { get; } = new DefaultQueryConfigurationsHashable
         {
             EnableFilter = true,
             EnableOrderBy = true,

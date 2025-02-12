@@ -6,6 +6,7 @@
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.OData.Edm;
     using Microsoft.OData.UriParser;
+    using OData2Linq.Settings;
     using System;
     using System.Collections.Generic;
     using System.Globalization;
