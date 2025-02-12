@@ -1,14 +1,12 @@
 ﻿namespace OData2Linq
 {
     using Microsoft.AspNetCore.OData.Query;
-    using Microsoft.AspNetCore.OData.Query.Expressions;
     using Microsoft.AspNetCore.OData.Query.Validator;
     using Microsoft.AspNetCore.OData.Query.Wrapper;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.OData;
     using Microsoft.OData.Edm;
     using Microsoft.OData.ModelBuilder;
-    using Microsoft.OData.ModelBuilder.Config;
     using Microsoft.OData.UriParser;
     using OData2Linq.Helpers;
     using OData2Linq.Settings;
@@ -16,7 +14,6 @@
     using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.ComponentModel.Design;
-    using System.Diagnostics.Contracts;
     using System.Linq;
 
     public static class ODataLinqExtensions
@@ -42,15 +39,14 @@
         {
             if (query == null) throw new ArgumentNullException(nameof(query));
 
-            ODataSettings settings = new ODataSettings();
+            var settings = new ODataSettings();
             configuration?.Invoke(settings);
 
             if (edmModel == null)
             {
                 edmModel = Models.GetOrAdd(typeof(T), t =>
                 {
-                    ODataConventionModelBuilder builder = new ODataConventionModelBuilder();
-                    //builder.ODataSettings = settings;
+                    var builder = new ODataConventionModelBuilder();
                     builder.AddEntityType(t);
                     builder.AddEntitySet(t.Name, new EntityTypeConfiguration(builder, t));
                     return builder.GetEdmModel();
@@ -71,9 +67,9 @@
                 settings.ParserSettings.MaximumExpansionDepth,
                 settings.AllowRecursiveLoopOfComplexTypes);
 
-            ServiceContainer baseContainer = Containers.GetOrAdd(settingsHash, i =>
+            var baseContainer = Containers.GetOrAdd(settingsHash, i =>
             {
-                ServiceContainer c = new ServiceContainer();
+                var c = new ServiceContainer();
 
                 c.AddService(typeof(ODataQuerySettings), settings.QuerySettings);
                 c.AddService(typeof(DefaultQueryConfigurations), settings.DefaultQueryConfigurations);
@@ -83,9 +79,8 @@
                 return c;
             });
 
-            ServiceContainer container = new ServiceContainer(baseContainer);
+            var container = new ServiceContainer(baseContainer);
             container.AddService(typeof(IEdmModel), edmModel);
-            container.AddService(typeof(FilterBinder), new FilterBinder());// container));
             container.AddService(typeof(ODataUriResolver), settings.Resolver ?? ODataSettings.DefaultResolver);
             container.AddService(typeof(ODataSettings), settings);
 
@@ -295,34 +290,17 @@
 
             ODataSettings settings = query.ServiceProvider.GetRequiredService<ODataSettings>();
 
-            FilterClause filterClause = queryOptionParser.ParseFilter();
-            SingleValueNode filterExpression = filterClause.Expression.Accept(
-                new ParameterAliasNodeTranslator(queryOptionParser.ParameterAliasNodes)) as SingleValueNode;
-            filterExpression = filterExpression ?? new ConstantNode(null);
-            filterClause = new FilterClause(filterExpression, filterClause.RangeVariable);
-            Contract.Assert(filterClause != null);
-
             var queryContext = new ODataQueryContext(edmModel, query.ElementType)
             {
                 RequestContainer = query.ServiceProvider
             };
-            var validator2 = new FilterQueryValidator();
-            var option = new FilterQueryOption(queryContext, filterClause);
-            validator2.Validate(option, settings.ValidationSettings);
+            var option = new FilterQueryOption(filterText, queryContext, queryOptionParser);
+            var validator = new FilterQueryValidator();
+            validator.Validate(option, settings.ValidationSettings);
 
-            //TODO: check alternative
-            //var binder = query.ServiceProvider.GetRequiredService<FilterBinder>();
-            //QueryBinderContext context = new QueryBinderContext(edmModel, query.ServiceProvider.GetRequiredService<ODataQuerySettings>(), query.ElementType)
-            //{
-            //    AssembliesResolver = AssemblyResolverHelper.Default,
-            //    //Source = query.Expression
-            //};
-            //var filter2 = binder.BindFilter(filterClause, context);
-            //var result2 = ExpressionHelpers.Where(query, filter2, typeof(T));
+            var result = option.ApplyTo(query, query.ServiceProvider.GetRequiredService<ODataQuerySettings>());
 
-            var result3 = option.ApplyTo(query, query.ServiceProvider.GetRequiredService<ODataQuerySettings>());
-
-            return new ODataQuery<T>(result3, query.ServiceProvider);
+            return new ODataQuery<T>(result, query.ServiceProvider);
         }
 
         /// <summary>Apply $orderby parameter to query.</summary>
@@ -330,7 +308,7 @@
         /// <param name="orderbyText">The $orderby parameter text.</param>
         /// <param name="entitySetName">The entity set name.</param>
         /// <typeparam name="T">The query type param</typeparam>
-        /// <returns>The <see cref="ODataQuery{T}"/> query with applied order by parameter.</returns>
+        /// <returns>The <see cref="ODataQuery{T}"/>query with applied order by parameter.</returns>
         /// <exception cref="ArgumentNullException">Argument Null Exception</exception>
         public static ODataQueryOrdered<T> OrderBy<T>(this ODataQuery<T> query, string orderbyText, string entitySetName = null)
         {
@@ -346,31 +324,17 @@
 
             ODataSettings settings = query.ServiceProvider.GetRequiredService<ODataSettings>();
 
-            var orderByClause = queryOptionParser.ParseOrderBy();
-
-            orderByClause = TranslateParameterAlias(orderByClause, queryOptionParser);
-
-            ICollection<OrderByNode> nodes = OrderByNode.CreateCollection(orderByClause);
-
             var queryContext = new ODataQueryContext(edmModel, query.ElementType)
             {
                 RequestContainer = query.ServiceProvider
             };
-            var validator2 = new OrderByQueryValidator();
             var option = new OrderByQueryOption(orderbyText, queryContext, queryOptionParser);
-            validator2.Validate(option, settings.ValidationSettings);
+            var validator = new OrderByQueryValidator();
+            validator.Validate(option, settings.ValidationSettings);
 
-            //TODO: check alternative
-            //var binder = new OrderByBinder();
-            //QueryBinderContext context = new QueryBinderContext(edmModel, query.ServiceProvider.GetRequiredService<ODataQuerySettings>(), typeof(T))
-            //{
-            //    AssembliesResolver = AssemblyResolverHelper.Default,
-            //    Source = query.Expression
-            //};
-            //var orderbyResult = binder.BindOrderBy(option.OrderByClause, context);
-            var result2 = option.ApplyTo<T>(query, query.ServiceProvider.GetRequiredService<ODataQuerySettings>());
+            var result = option.ApplyTo<T>(query, query.ServiceProvider.GetRequiredService<ODataQuerySettings>());
 
-            return new ODataQueryOrdered<T>(result2, query.ServiceProvider);
+            return new ODataQueryOrdered<T>(result, query.ServiceProvider);
         }
 
         private static IEnumerable<T> Enumerate<T>(IQueryable queryable) where T : class
@@ -381,24 +345,6 @@
             {
                 yield return enumerator.Current as T;
             }
-        }
-
-        private static OrderByClause TranslateParameterAlias(OrderByClause orderBy, ODataQueryOptionParser queryOptionParser)
-        {
-            if (orderBy == null)
-            {
-                return null;
-            }
-
-            SingleValueNode orderByExpression = orderBy.Expression.Accept(
-                new ParameterAliasNodeTranslator(queryOptionParser.ParameterAliasNodes)) as SingleValueNode;
-            orderByExpression = orderByExpression ?? new ConstantNode(null, "null");
-
-            return new OrderByClause(
-                TranslateParameterAlias(orderBy.ThenBy, queryOptionParser),
-                orderByExpression,
-                orderBy.Direction,
-                orderBy.RangeVariable);
         }
 
         public static ODataQueryOptionParser GetParser<T>(ODataQuery<T> query, string entitySetName, IDictionary<string, string> raws)

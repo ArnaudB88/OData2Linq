@@ -5,5 +5,6 @@ using OData2Linq.Benchmark;
 Console.WriteLine("Start benchmarking");
 
 BenchmarkRunner.Run<InitQuery>();
+BenchmarkRunner.Run<QueryOperations>();
 
 Console.WriteLine("End benchmarking");

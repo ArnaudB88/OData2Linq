@@ -1,11 +1,10 @@
 ﻿using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.OData.Query;
-using Microsoft.AspNetCore.OData.Query.Expressions;
-using Microsoft.AspNetCore.OData.Query.Validator;
 using Microsoft.OData;
 using Microsoft.OData.Edm;
 using Microsoft.OData.ModelBuilder;
 using Microsoft.OData.UriParser;
+using OData2Linq.Settings;
 using OData2Linq.Tests.SampleData;
 using System.ComponentModel.Design;
 
@@ -45,12 +44,10 @@ namespace OData2Linq.Benchmark
             container.AddService(typeof(IEdmModel), edmModel);
             container.AddService(typeof(ODataQuerySettings), settings.QuerySettings);
             container.AddService(typeof(ODataUriParserSettings), settings.ParserSettings);
-            container.AddService(typeof(IFilterBinder), new FilterBinder());
             container.AddService(typeof(ODataUriResolver), settings.Resolver ?? DefaultResolver);
             container.AddService(typeof(ODataSimplifiedOptions), SimplifiedOptions);
             container.AddService(typeof(ODataSettings), settings);
             container.AddService(typeof(DefaultQueryConfigurations), settings.DefaultQueryConfigurations);
-            container.AddService(typeof(ISelectExpandQueryValidator), new SelectExpandQueryValidator());
 
             return new Tuple<IQueryable, ServiceContainer>(query, container);
         }
@@ -71,12 +68,10 @@ namespace OData2Linq.Benchmark
             container.AddService(typeof(IEdmModel), edmModel);
             container.AddService(typeof(ODataQuerySettings), settings.QuerySettings);
             container.AddService(typeof(ODataUriParserSettings), settings.ParserSettings);
-            container.AddService(typeof(IFilterBinder), new FilterBinder());
             container.AddService(typeof(ODataUriResolver), settings.Resolver ?? DefaultResolver);
             container.AddService(typeof(ODataSimplifiedOptions), SimplifiedOptions);
             container.AddService(typeof(ODataSettings), settings);
             container.AddService(typeof(DefaultQueryConfigurations), settings.DefaultQueryConfigurations);
-            container.AddService(typeof(ISelectExpandQueryValidator), new SelectExpandQueryValidator());
 
             return new Tuple<IQueryable, IServiceProvider>(query, container);
         }
@@ -84,7 +79,8 @@ namespace OData2Linq.Benchmark
         [Benchmark]
         public Tuple<IQueryable, IServiceProvider> ODataExtension()
         {
-            return new Tuple<IQueryable, IServiceProvider>(query.OData(), new ServiceContainer());
+            var odataQuery = query.OData();
+            return new Tuple<IQueryable, IServiceProvider>(odataQuery, odataQuery.ServiceProvider);
         }
     }
 }
