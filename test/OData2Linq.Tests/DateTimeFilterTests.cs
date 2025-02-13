@@ -52,7 +52,10 @@ namespace OData2Linq.Tests
             output.WriteLine(filter);
 
             var result = SimpleClass.CreateQuery().OData().Filter(filter).ToArray();
-            Assert.Empty(result);
+            if (TimeZoneInfo.Local != TimeZoneInfo.Utc)
+                Assert.Empty(result);
+            else
+                Assert.Single(result);
         }
 
         [Fact]
@@ -88,7 +91,10 @@ namespace OData2Linq.Tests
             output.WriteLine(filter);
 
             var result = SimpleClass.CreateQuery().OData().Filter(filter).ToArray();
-            Assert.Empty(result);
+            if (TimeZoneInfo.Local != TimeZoneInfo.Utc)
+                Assert.Empty(result);
+            else
+                Assert.Single(result);
         }
 
         [Fact]
@@ -125,7 +131,10 @@ namespace OData2Linq.Tests
             output.WriteLine(filter);
 
             var result = SimpleClass.CreateQuery().OData(c => c.QuerySettings.TimeZone = TimeZoneInfo.Utc).Filter(filter).ToArray();
-            Assert.Empty(result);
+            if (TimeZoneInfo.Local != TimeZoneInfo.Utc)
+                Assert.Empty(result);
+            else
+                Assert.Single(result);
         }
 
         [Fact]
@@ -136,7 +145,10 @@ namespace OData2Linq.Tests
             output.WriteLine(filter);
 
             var result = SimpleClass.CreateQuery().OData(c => c.QuerySettings.TimeZone = TimeZoneInfo.Utc).Filter(filter).ToArray();
-            Assert.Empty(result);
+            if (TimeZoneInfo.Local != TimeZoneInfo.Utc)
+                Assert.Empty(result);
+            else
+                Assert.Single(result);
         }
 
         [Fact]
@@ -147,7 +159,11 @@ namespace OData2Linq.Tests
             output.WriteLine(filter);
 
             var result = SimpleClass.CreateQuery().OData(c => c.QuerySettings.TimeZone = TimeZoneInfo.Utc).Filter(filter).ToArray();
-            Assert.Empty(result);
+
+            if (TimeZoneInfo.Local != TimeZoneInfo.Utc)
+                Assert.Empty(result);
+            else
+                Assert.Single(result);
         }
 
         [Fact]
