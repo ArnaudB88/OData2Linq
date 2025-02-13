@@ -52,10 +52,10 @@ namespace OData2Linq.Tests
             output.WriteLine(filter);
 
             var result = SimpleClass.CreateQuery().OData().Filter(filter).ToArray();
-            if (TimeZoneInfo.Local != TimeZoneInfo.Utc)
-                Assert.Empty(result);
-            else
+            if (TimeZoneInfo.Local.Equals(TimeZoneInfo.Utc))
                 Assert.Single(result);
+            else
+                Assert.Empty(result);
         }
 
         [Fact]
@@ -91,10 +91,10 @@ namespace OData2Linq.Tests
             output.WriteLine(filter);
 
             var result = SimpleClass.CreateQuery().OData().Filter(filter).ToArray();
-            if (TimeZoneInfo.Local != TimeZoneInfo.Utc)
-                Assert.Empty(result);
-            else
+            if (TimeZoneInfo.Local.Equals(TimeZoneInfo.Utc))
                 Assert.Single(result);
+            else
+                Assert.Empty(result);
         }
 
         [Fact]
@@ -131,10 +131,10 @@ namespace OData2Linq.Tests
             output.WriteLine(filter);
 
             var result = SimpleClass.CreateQuery().OData(c => c.QuerySettings.TimeZone = TimeZoneInfo.Utc).Filter(filter).ToArray();
-            if (TimeZoneInfo.Local != TimeZoneInfo.Utc)
-                Assert.Empty(result);
-            else
+            if (TimeZoneInfo.Local.Equals(TimeZoneInfo.Utc))
                 Assert.Single(result);
+            else
+                Assert.Empty(result);
         }
 
         [Fact]
@@ -145,10 +145,10 @@ namespace OData2Linq.Tests
             output.WriteLine(filter);
 
             var result = SimpleClass.CreateQuery().OData(c => c.QuerySettings.TimeZone = TimeZoneInfo.Utc).Filter(filter).ToArray();
-            if (TimeZoneInfo.Local != TimeZoneInfo.Utc)
-                Assert.Empty(result);
-            else
+            if (TimeZoneInfo.Local.Equals(TimeZoneInfo.Utc))
                 Assert.Single(result);
+            else
+                Assert.Empty(result);
         }
 
         [Fact]
@@ -160,10 +160,10 @@ namespace OData2Linq.Tests
 
             var result = SimpleClass.CreateQuery().OData(c => c.QuerySettings.TimeZone = TimeZoneInfo.Utc).Filter(filter).ToArray();
 
-            if (TimeZoneInfo.Local != TimeZoneInfo.Utc)
-                Assert.Empty(result);
-            else
+            if (TimeZoneInfo.Local.Equals(TimeZoneInfo.Utc))
                 Assert.Single(result);
+            else
+                Assert.Empty(result);
         }
 
         [Fact]
@@ -175,9 +175,11 @@ namespace OData2Linq.Tests
             Assert.Equal(dt, dtUtc);
             Assert.Equal(dtUtc, dtLocal);
 
-            Assert.NotEqual(TimeZoneInfo.Local, TimeZoneInfo.Utc);
-            Assert.NotEqual(TimeZoneInfo.Local.GetHashCode(), TimeZoneInfo.Utc.GetHashCode());
-
+            if (!TimeZoneInfo.Local.Equals(TimeZoneInfo.Utc))
+            {
+                Assert.NotEqual(TimeZoneInfo.Local, TimeZoneInfo.Utc);
+                Assert.NotEqual(TimeZoneInfo.Local.GetHashCode(), TimeZoneInfo.Utc.GetHashCode());
+            }
             Assert.Equal(TimeZoneInfo.Utc, TimeZoneInfo.Utc);
             Assert.Equal(TimeZoneInfo.Utc.GetHashCode(), TimeZoneInfo.Utc.GetHashCode());
         }
