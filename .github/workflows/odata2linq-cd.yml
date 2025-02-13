@@ -29,6 +29,6 @@ jobs:
     - name: Test
       run: dotnet test ./AspNetCoreOData.sln -c Release --no-build --verbosity normal
     - name: Pack
-      run: dotnet pack ./src/OData2Linq.csproj -c Release -o .\artifacts --no-build
+      run: dotnet pack ./src/OData2Linq/OData2Linq.csproj -c Release -o .\artifacts --no-build
     - name: Publish to NuGet
       run: dotnet nuget push .\artifacts\*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }}
