@@ -12,6 +12,7 @@ namespace OData2Linq.Tests
         private static readonly DateTime dt = new DateTime(2018, 1, 26, 0, 0, 0);
         private static readonly DateTimeOffset dto = new DateTimeOffset(dt, TimeZoneInfo.Local.BaseUtcOffset);
         private static readonly DateOnly do1 = new(2018, 1, 26);
+        private static readonly TimeOnly to1 = new(12, 34, 56);
         //private readonly DateTimeOffset dtoUtc = new DateTimeOffset(new DateTime(2018, 1, 26).ToUniversalTime());
 
         public DateTimeFilterTests(ITestOutputHelper output)
@@ -175,6 +176,18 @@ namespace OData2Linq.Tests
             var result = SimpleClass.CreateQuery().OData().Filter(filter).ToArray();
             Assert.Single(result);
             Assert.True(result.First().DateOnly == do1);
+        }
+
+        [Fact]
+        public void TimeOnlyFilterWorks()
+        {
+            string value = to1.ToLongTimeString();
+            string filter = $"{nameof(SimpleClass.TimeOnly)} eq {value}";
+            output.WriteLine(filter);
+
+            var result = SimpleClass.CreateQuery().OData().Filter(filter).ToArray();
+            Assert.Single(result);
+            Assert.True(result.First().TimeOnly == to1);
         }
 
     }
