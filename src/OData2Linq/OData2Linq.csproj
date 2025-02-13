@@ -13,6 +13,7 @@
     <RepositoryUrl>https://github.com/ArnaudB88/OData2Linq</RepositoryUrl>
     <Title>Apply an OData filter text query to an IQueryable expression</Title>
     <PackageTags>odata;filter;linq</PackageTags>
+    <Description>Apply an OData filter text query to an IQueryable expression</Description>
   </PropertyGroup>
 
   <ItemGroup>
