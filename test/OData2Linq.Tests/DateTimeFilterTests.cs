@@ -199,7 +199,7 @@ namespace OData2Linq.Tests
         [Fact]
         public void TimeOnlyFilterWorks()
         {
-            string value = to1.ToLongTimeString();
+            string value = to1.ToString("HH:mm:ss");
             string filter = $"{nameof(SimpleClass.TimeOnly)} eq {value}";
             output.WriteLine(filter);
 
