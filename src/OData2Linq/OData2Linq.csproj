@@ -7,7 +7,7 @@
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>FriendAssemblies.snk</AssemblyOriginatorKeyFile>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>1.0.0</Version>
+    <Version>0.0.7</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/ArnaudB88/OData2Linq</RepositoryUrl>
@@ -32,6 +32,7 @@
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
+    <None Include="..\..\.github\workflows\odata2linq-cd.yml" Link="odata2linq-cd.yml" />
     <None Include="..\..\.github\workflows\odata2linq-ci.yml" Link="odata2linq-ci.yml" />
  </ItemGroup>
 </Project>
