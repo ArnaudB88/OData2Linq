@@ -25,9 +25,9 @@
         }
 
         private static double MemoryUsageInMBStart = default;
-        public static IEnumerable<object[]> DummyTestData() => Enumerable.Range(0, 1000).Select(i => new object[] { i });
+        public static IEnumerable<object[]> Iterations() => Enumerable.Range(0, 1000).Select(i => new object[] { i });
         [Theory]
-        [MemberData(nameof(DummyTestData))]
+        [MemberData(nameof(Iterations))]
         public void MemoryUsageShouldNotIncrease(int iteration)
         {
             // Generate the list of items to query
