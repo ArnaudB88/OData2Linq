@@ -30,17 +30,19 @@
         [MemberData(nameof(Iterations))]
         public void MemoryUsageShouldNotIncrease(int iteration)
         {
-            // Generate the list of items to query
+            //Arrange
             var items = new List<TestItem>
             {
                 new() { Id = Guid.NewGuid(), Name = "Test", Number = 1 },
                 new() { Id = Guid.NewGuid(), Name = "Another", Number = 2 }
             };
 
+            //Act
             var odata = items.AsQueryable().OData();
             var filteredItems = odata.Filter("Number eq 2");
             //((IDisposable)odata.ServiceProvider).Dispose(); //Makes no difference in memory usage
 
+            //Assert
             Assert.Equal(1, filteredItems.Count());
 
             Process currentProc = Process.GetCurrentProcess();
