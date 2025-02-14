@@ -1,4 +1,4 @@
-![NuGet Version](https://img.shields.io/nuget/v/OData2Linq)
+[![NuGet Version](https://img.shields.io/nuget/v/OData2Linq?label=NuGet)](https://www.nuget.org/packages/OData2Linq/)
 
 # OData2Linq
 Apply an OData text query (filter, order by, select, ..) to an IQueryable expression.
@@ -93,11 +93,11 @@ See the [Wiki pages](https://github.com/ArnaudB88/OData2Linq/wiki)
 Please feel free to create issues and pull requests to the main branch.
 
 # Nuget
-| Package                         | NuGet                                                                            | Info             |
-|---------------------------------|----------------------------------------------------------------------------------|------------------|
-| OData2Linq                      | ![NuGet Version](https://img.shields.io/nuget/v/OData2Linq)                      | OData v8 support |
-| Community.OData.Linq.Json       | ![NuGet Version](https://img.shields.io/nuget/v/Community.OData.Linq.Json)       | Still works on odata v7 libraries. Open an issue to create a new package for odata v8. |
-| Community.OData.Linq.AspNetCore | ![NuGet Version](https://img.shields.io/nuget/v/Community.OData.Linq.AspNetCore) | Still works on odata v7 libraries. Open an issue to create a new package for odata v8. |
+| Package                         | NuGet                                                                                                                                              | Info             |
+|---------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------|------------------|
+| OData2Linq                      | [![NuGet Version](https://img.shields.io/nuget/v/OData2Linq?label=NuGet)](https://www.nuget.org/packages/OData2Linq/)                              | OData v8 support |
+| Community.OData.Linq.Json       | [![NuGet Version](https://img.shields.io/nuget/v/Community.OData.Linq.Json)](https://www.nuget.org/packages/Community.OData.Linq.Json)             | Still works on odata v7 libraries. Open an issue to create a new package for odata v8. |
+| Community.OData.Linq.AspNetCore | [![NuGet Version](https://img.shields.io/nuget/v/Community.OData.Linq.AspNetCore)](https://www.nuget.org/packages/Community.OData.Linq.AspNetCore) | Still works on odata v7 libraries. Open an issue to create a new package for odata v8. |
 
 # References
 This project is based on the following project:
