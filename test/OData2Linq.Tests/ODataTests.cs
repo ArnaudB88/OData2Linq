@@ -3,6 +3,7 @@
     using OData2Linq.Tests.SampleData;
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Linq;
     using Xunit;
 
@@ -23,19 +24,32 @@
             Assert.Throws<InvalidOperationException>(() => SampleWithoutKey.CreateQuery().OData());
         }
 
-        [Fact]
-        public void Disposable()
+        private static double MemoryUsageInMBStart = default;
+        public static IEnumerable<object[]> DummyTestData() => Enumerable.Range(0, 1000).Select(i => new object[] { i });
+        [Theory]
+        [MemberData(nameof(DummyTestData))]
+        public void MemoryUsageShouldNotIncrease(int iteration)
         {
             // Generate the list of items to query
-            var items = new List<TestItem>();
-            items.Add(new TestItem() { Id = Guid.NewGuid(), Name = "Test", Number = 1 });
-            items.Add(new TestItem() { Id = Guid.NewGuid(), Name = "Another", Number = 2 });
+            var items = new List<TestItem>
+            {
+                new() { Id = Guid.NewGuid(), Name = "Test", Number = 1 },
+                new() { Id = Guid.NewGuid(), Name = "Another", Number = 2 }
+            };
 
             var odata = items.AsQueryable().OData();
             var filteredItems = odata.Filter("Number eq 2");
-            //odata.Dispose();                                        // Test that the OData object is being torn down
+            //((IDisposable)odata.ServiceProvider).Dispose(); //Makes no difference in memory usage
 
             Assert.Equal(1, filteredItems.Count());
+
+            Process currentProc = Process.GetCurrentProcess();
+            var bytesInUse = currentProc.PrivateMemorySize64 / (double)1000_000;
+            if (MemoryUsageInMBStart == default)
+                MemoryUsageInMBStart = bytesInUse;
+            Trace.WriteLine($"Private bytes after test run: {Math.Round(bytesInUse, 2)}MB ({MemoryUsageInMBStart}MB at start)(Iteration {iteration})");
+
+            Assert.True(bytesInUse - MemoryUsageInMBStart < 10, "Memory usage should not increase by more than 10MB");
         }
     }
 }
