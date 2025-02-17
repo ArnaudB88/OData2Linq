@@ -7,7 +7,7 @@
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>FriendAssemblies.snk</AssemblyOriginatorKeyFile>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>1.0.0</Version>
+    <Version>1.1.0</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/ArnaudB88/OData2Linq</RepositoryUrl>
@@ -18,7 +18,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.OData.ModelBuilder" Version="1.0.9" />
-    <PackageReference Include="Microsoft.OData.Core" Version="7.15.0" />
+    <PackageReference Include="Microsoft.OData.Core" Version="7.20.0" />
   </ItemGroup>
 
  <ItemGroup>
