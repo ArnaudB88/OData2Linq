@@ -115,4 +115,206 @@ namespace Microsoft.AspNetCore.OData.E2E.Tests.ServerSidePaging
             return customers;
         }
     }
+
+    public class SkipTokenPagingS3CustomersController : ODataController
+    {
+        private static readonly List<SkipTokenPagingCustomer> customers = new List<SkipTokenPagingCustomer>
+        {
+            new SkipTokenPagingCustomer { Id = 1, CustomerSince = null },
+            new SkipTokenPagingCustomer { Id = 2, CustomerSince = new DateTime(2023, 1, 2) },
+            new SkipTokenPagingCustomer { Id = 3, CustomerSince = null },
+            new SkipTokenPagingCustomer { Id = 4, CustomerSince = new DateTime(2023, 1, 30) },
+            new SkipTokenPagingCustomer { Id = 5, CustomerSince = null },
+            new SkipTokenPagingCustomer { Id = 6, CustomerSince = new DateTime(2023, 2, 4) },
+            new SkipTokenPagingCustomer { Id = 7, CustomerSince = new DateTime(2023, 1, 5) },
+            new SkipTokenPagingCustomer { Id = 8, CustomerSince = new DateTime(2023, 2, 19) },
+            new SkipTokenPagingCustomer { Id = 9, CustomerSince = new DateTime(2023, 1, 25) },
+        };
+
+        [EnableQuery(PageSize = 2)]
+        public ActionResult<IEnumerable<SkipTokenPagingCustomer>> Get()
+        {
+            return customers;
+        }
+    }
+
+    public class SkipTokenPagingEdgeCase1CustomersController : ODataController
+    {
+        private static readonly List<SkipTokenPagingEdgeCase1Customer> customers = new List<SkipTokenPagingEdgeCase1Customer>
+        {
+            new SkipTokenPagingEdgeCase1Customer { Id = 2, CreditLimit = 2 },
+            new SkipTokenPagingEdgeCase1Customer { Id = 4, CreditLimit = 30 },
+            new SkipTokenPagingEdgeCase1Customer { Id = 6, CreditLimit = 35 },
+            new SkipTokenPagingEdgeCase1Customer { Id = 7, CreditLimit = 5 },
+            new SkipTokenPagingEdgeCase1Customer { Id = 9, CreditLimit = 25 },
+        };
+
+        [EnableQuery(PageSize = 2)]
+        public ActionResult<IEnumerable<SkipTokenPagingEdgeCase1Customer>> Get()
+        {
+            return customers;
+        }
+    }
+
+    public class ContainmentPagingCustomersController : ODataController
+    {
+        [EnableQuery(PageSize = 2)]
+        public ActionResult Get()
+        {
+            return Ok(ContainmentPagingDataSource.Customers);
+        }
+
+        [EnableQuery(PageSize = 2)]
+        public ActionResult GetOrders(int key)
+        {
+            var customer = ContainmentPagingDataSource.Customers.SingleOrDefault(d => d.Id == key);
+
+            if (customer == null)
+            {
+                return BadRequest();
+            }
+
+            return Ok(customer.Orders);
+        }
+    }
+
+    public class ContainmentPagingCompanyController : ODataController
+    {
+        private static readonly ContainmentPagingCustomer company = new ContainmentPagingCustomer
+        {
+            Id = 1,
+            Orders = ContainmentPagingDataSource.Orders.Take(ContainmentPagingDataSource.TargetSize).ToList()
+        };
+
+        [EnableQuery(PageSize = 2)]
+        public ActionResult Get()
+        {
+            return Ok(company);
+        }
+
+        [EnableQuery(PageSize = 2)]
+        public ActionResult GetOrders()
+        {
+            return Ok(company.Orders);
+        }
+    }
+
+    public class NoContainmentPagingCustomersController : ODataController
+    {
+        [EnableQuery(PageSize = 2)]
+        public ActionResult Get()
+        {
+            return Ok(NoContainmentPagingDataSource.Customers);
+        }
+
+        [EnableQuery(PageSize = 2)]
+        public ActionResult GetOrders(int key)
+        {
+            var customer = NoContainmentPagingDataSource.Customers.SingleOrDefault(d => d.Id == key);
+
+            if (customer == null)
+            {
+                return BadRequest();
+            }
+
+            return Ok(customer.Orders);
+        }
+    }
+
+    public class ContainmentPagingMenusController : ODataController
+    {
+        [EnableQuery(PageSize = 2, MaxExpansionDepth = 4)]
+        public ActionResult Get()
+        {
+            return Ok(ContainmentPagingDataSource.Menus);
+        }
+
+        [EnableQuery(PageSize = 2, MaxExpansionDepth = 4)]
+        public ActionResult GetFromContainmentPagingExtendedMenu()
+        {
+            return Ok(ContainmentPagingDataSource.Menus.OfType<ContainmentPagingExtendedMenu>());
+        }
+
+        [EnableQuery(PageSize = 2, MaxExpansionDepth = 4)]
+        public ActionResult GetTabsFromContainmentPagingExtendedMenu(int key)
+        {
+            var menu = ContainmentPagingDataSource.Menus.OfType<ContainmentPagingExtendedMenu>().SingleOrDefault(d => d.Id == key);
+
+            if (menu == null)
+            {
+                return BadRequest();
+            }
+
+            return Ok(menu.Tabs);
+        }
+
+        [EnableQuery(PageSize = 2, MaxExpansionDepth = 4)]
+        public ActionResult GetPanelsFromContainmentPagingExtendedMenu(int key)
+        {
+            var menu = ContainmentPagingDataSource.Menus.OfType<ContainmentPagingExtendedMenu>().SingleOrDefault(d => d.Id == key);
+
+            if (menu == null)
+            {
+                return BadRequest();
+            }
+
+            return Ok(menu.Panels);
+        }
+    }
+
+    public class ContainmentPagingRibbonController : ODataController
+    {
+        private static readonly ContainmentPagingMenu ribbon = new ContainmentPagingExtendedMenu
+        {
+            Id = 1,
+            Tabs = ContainmentPagingDataSource.Tabs.Take(ContainmentPagingDataSource.TargetSize).ToList()
+        };
+
+        [EnableQuery(PageSize = 2, MaxExpansionDepth = 4)]
+        public ActionResult Get()
+        {
+            return Ok(ribbon);
+        }
+
+        [EnableQuery(PageSize = 2, MaxExpansionDepth = 4)]
+        public ActionResult GetFromContainmentPagingExtendedMenu()
+        {
+            return Ok(ribbon as ContainmentPagingExtendedMenu);
+        }
+
+        [EnableQuery(PageSize = 2, MaxExpansionDepth = 4)]
+        [HttpGet("ContainmentPagingRibbon/Microsoft.AspNetCore.OData.E2E.Tests.ServerSidePaging.ContainmentPagingExtendedMenu/Tabs")]
+        public ActionResult GetTabsFromContainmentPagingExtendedMenu()
+        {
+            return Ok((ribbon as ContainmentPagingExtendedMenu).Tabs);
+        }
+    }
+
+    public class CollectionPagingCustomersController : ODataController
+    {
+        private const int TargetSize = 3;
+        private static readonly List<CollectionPagingCustomer> customers = new List<CollectionPagingCustomer>(
+            Enumerable.Range(1, TargetSize).Select(idx => new CollectionPagingCustomer
+            {
+                Id = idx,
+                Tags = new List<string> { "Tier 1", "Gen-Z", "HNW" },
+                Categories = new List<CollectionPagingCategory>
+                {
+                    CollectionPagingCategory.Retailer,
+                    CollectionPagingCategory.Wholesaler,
+                    CollectionPagingCategory.Distributor
+                },
+                Locations = new List<CollectionPagingLocation>(
+                    Enumerable.Range(1, TargetSize).Select(dx => new CollectionPagingLocation
+                    {
+                        Street = $"Street {idx}{dx}"
+                    }))
+            }));
+
+        [EnableQuery(PageSize = 2)]
+        public ActionResult Get()
+        {
+            return Ok(customers);
+        }
+    }
 }

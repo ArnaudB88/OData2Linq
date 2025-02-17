@@ -364,6 +364,17 @@ namespace Microsoft.AspNetCore.OData.Query
                 this.Context.ElementClrType = Apply.ResultClrType;
             }
 
+            // We need this code to let 'ODataQueryOptionParser' to parse the 'ComputeClause'
+            // By parsing the compute clause, we give the parser opportunity to gather the 'computed' properties
+            // which could be required in $filter, $order and $select, etc.
+            // Without this code, it will be failed when customer only uses 'ODataQueryOptions<T>' as the parameter in action.
+            // It should work if customer uses [EnableQuery], this is because [EnableQuery] calls validators
+            // and the validators parse the 'ComputeClause' already.
+            if (IsAvailableODataQueryOption(Compute, querySettings, AllowedQueryOptions.Compute))
+            {
+                _ = Compute.ComputeClause;
+            }
+
             // TODO: need pass the result from $compute to the remaining query options
             // Construct the actual query and apply them in the following order: filter, orderby, skip, top
             if (IsAvailableODataQueryOption(Filter, querySettings, AllowedQueryOptions.Filter))
@@ -409,7 +420,8 @@ namespace Microsoft.AspNetCore.OData.Query
             if (querySettings.EnsureStableOrdering &&
                 (IsAvailableODataQueryOption(Skip, querySettings, AllowedQueryOptions.Skip) ||
                  IsAvailableODataQueryOption(Top, querySettings, AllowedQueryOptions.Top) ||
-                 querySettings.PageSize.HasValue))
+                 querySettings.PageSize.HasValue ||
+                 querySettings.ModelBoundPageSize.HasValue))
             {
                 // If there is no OrderBy present, we manufacture a default.
                 // If an OrderBy is already present, we add any missing
@@ -418,6 +430,7 @@ namespace Microsoft.AspNetCore.OData.Query
                 // let the IQueryable backend fail (if it has to).
 
                 orderBy = GenerateStableOrder();
+                OrderBy = orderBy; // update the orderby
             }
 
             if (IsAvailableODataQueryOption(orderBy, querySettings, AllowedQueryOptions.OrderBy))
@@ -667,6 +680,9 @@ namespace Microsoft.AspNetCore.OData.Query
                     : entityType
                         .StructuralProperties()
                         .Where(property => property.Type.IsPrimitive() && !property.Type.IsStream())
+
+                        // @discuss: Orderby the keys using the key name alphabet order doesn't make sense for me.
+                        // Since we don't have the 'Order' value, we should keep the order same as definition order in the schema?
                         .OrderBy(p => p.Name);
 
             return properties.ToList();
@@ -745,12 +761,8 @@ namespace Microsoft.AspNetCore.OData.Query
                     // Clone the given one and add the remaining properties to end, thereby making
                     // the sort stable but preserving the user's original intent for the major
                     // sort order.
-                    orderBy = new OrderByQueryOption(orderBy);
-
-                    foreach (IEdmStructuralProperty property in propertiesToAdd)
-                    {
-                        orderBy.OrderByNodes.Add(new OrderByPropertyNode(property, OrderByDirection.Ascending));
-                    }
+                    var orderByRaw = orderBy.RawValue + "," + string.Join(",", propertiesToAdd.Select(p => p.Name));
+                    orderBy = new OrderByQueryOption(orderByRaw, context);
                 }
             }
 
@@ -1083,6 +1095,11 @@ namespace Microsoft.AspNetCore.OData.Query
                 if (computeAvailable)
                 {
                     newSelectExpand.Compute = Compute;
+                }
+
+                if (Context.DefaultQueryConfigurations.EnableSkipToken && OrderBy != null)
+                {
+                    newSelectExpand.OrderBy = OrderBy;
                 }
 
                 var type = typeof(T);

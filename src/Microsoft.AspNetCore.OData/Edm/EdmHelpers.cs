@@ -5,7 +5,6 @@
 // </copyright>
 //------------------------------------------------------------------------------
 
-using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using Microsoft.AspNetCore.OData.Query;
 using Microsoft.OData.Edm;
@@ -20,6 +19,101 @@ namespace Microsoft.AspNetCore.OData.Edm
     /// </summary>
     internal static class EdmHelpers
     {
+        public static IEdmStructuredTypeReference ToStructuredTypeReference(this IEdmTypeReference edmTypeReference)
+        {
+            if (edmTypeReference == null)
+            {
+                return null;
+            }
+
+            if (edmTypeReference is IEdmStructuredTypeReference structuredTypeReference)
+            {
+                return structuredTypeReference;
+            }
+
+            if (edmTypeReference.IsUntyped())
+            {
+                return EdmUntypedStructuredTypeReference.NullableTypeReference;
+            }
+
+            return edmTypeReference.AsStructured();
+        }
+
+        public static bool IsStructuredOrUntypedStructuredCollection(this IEdmTypeReference edmTypeReference)
+        {
+            if (edmTypeReference == null)
+            {
+                return false;
+            }
+
+            if (!edmTypeReference.IsCollection())
+            {
+                return false;
+            }
+
+            IEdmTypeReference elementType = edmTypeReference.AsCollection().ElementType();
+
+            return elementType.IsStructuredOrUntypedStructured();
+        }
+
+        public static bool IsStructuredOrUntypedStructured(this IEdmTypeReference edmTypeReference)
+        {
+            if (edmTypeReference == null)
+            {
+                return false;
+            }
+
+            if (edmTypeReference.IsStructured())
+            {
+                return true;
+            }
+
+            if (edmTypeReference.IsUntyped() &&
+                typeof(IEdmStructuredTypeReference).IsAssignableFrom(edmTypeReference.GetType()))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Tests whether a <see cref="IEdmTypeReference"/> is 'Edm.Untyped' or 'Collection(Edm.Untyped)'.
+        /// </summary>
+        /// <param name="edmTypeReference">The test type reference.</param>
+        /// <returns>True/false.</returns>
+        public static bool IsStructuredOrUntyped(this IEdmTypeReference edmTypeReference)
+        {
+            IEdmTypeReference elementType = edmTypeReference.IsCollection() ?
+                edmTypeReference.AsCollection().ElementType() :
+                edmTypeReference;
+
+            return elementType.IsUntyped() || elementType.IsStructured();
+        }
+
+        /// <summary>
+        /// Tests whether a <see cref="IEdmTypeReference"/> is 'Collection(Edm.Untyped)'.
+        /// </summary>
+        /// <param name="typeReference">The test type reference.</param>
+        /// <returns>True/false.</returns>
+        public static bool IsCollectionUntyped(this IEdmTypeReference typeReference)
+        {
+            return typeReference != null &&
+                typeReference.IsCollection() && typeReference.AsCollection().ElementType().IsUntyped();
+        }
+
+        /// <summary>
+        /// Tests whether a <see cref="IEdmTypeReference"/> is 'Edm.Untyped' or 'Collection(Edm.Untyped)'.
+        /// </summary>
+        /// <param name="typeReference">The test type reference.</param>
+        /// <returns>True/false</returns>
+        public static bool IsUntypedOrCollectionUntyped(this IEdmTypeReference typeReference)
+        {
+            return typeReference != null &&
+                (typeReference.IsUntyped() ||
+                    (typeReference.IsCollection() && typeReference.AsCollection().ElementType().IsUntyped()));
+        }
+
         /// <summary>
         /// Get element type reference if it's collection or return itself
         /// </summary>
@@ -42,7 +136,7 @@ namespace Microsoft.AspNetCore.OData.Edm
         }
 
         /// <summary>
-        /// Get the elementType if it's collection or return itself's type
+        /// Get the elementType if it's collection or return itself
         /// </summary>
         /// <param name="edmTypeReference">The test type reference.</param>
         /// <returns>Element type or itself.</returns>
@@ -109,31 +203,6 @@ namespace Microsoft.AspNetCore.OData.Edm
                 default:
                     throw Error.NotSupported(SRResources.EdmTypeNotSupported, edmType.ToTraceString());
             }
-        }
-
-        public static IEnumerable<IEdmEntityType> GetAllDerivedEntityTypes(IEdmEntityType entityType, IEdmModel edmModel)
-        {
-            List<IEdmEntityType> derivedEntityTypes = new List<IEdmEntityType>();
-            if (entityType != null)
-            {
-                List<IEdmStructuredType> typeList = new List<IEdmStructuredType>();
-                typeList.Add(entityType);
-                while (typeList.Count > 0)
-                {
-                    var head = typeList[0];
-                    derivedEntityTypes.Add(head as IEdmEntityType);
-                    var derivedTypes = edmModel.FindDirectlyDerivedTypes(head);
-                    if (derivedTypes != null)
-                    {
-                        typeList.AddRange(derivedTypes);
-                    }
-
-                    typeList.RemoveAt(0);
-                }
-            }
-
-            derivedEntityTypes.RemoveAt(0);
-            return derivedEntityTypes;
         }
 
         public static bool IsTopLimitExceeded(IEdmProperty property, IEdmStructuredType structuredType,

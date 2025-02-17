@@ -10,8 +10,7 @@ using System.Diagnostics.Contracts;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.OData.Common;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.OData.Edm;
 using Microsoft.OData;
 using Microsoft.OData.Edm;
 
@@ -65,7 +64,7 @@ namespace Microsoft.AspNetCore.OData.Formatter.Serialization
             ODataPrimitiveValue value = CreateODataPrimitiveValue(graph, expectedType.AsPrimitive(), writeContext);
             if (value == null)
             {
-                return new ODataNullValue();
+                return ODataNullValueExtensions.NullValue;
             }
 
             return value;
@@ -135,6 +134,17 @@ namespace Microsoft.AspNetCore.OData.Formatter.Serialization
             }
 
             Type type = value.GetType();
+
+            // Return values for supported primitive values. 
+            if (type == typeof(string)
+                || type == typeof(int)
+                || type == typeof(bool)
+                || type == typeof(double)
+                || type == typeof(Guid))
+            {
+                return value;
+            }
+
             if (primitiveType != null && primitiveType.IsDate() && TypeHelper.IsDateTime(type))
             {
                 Date dt = (DateTime)value;

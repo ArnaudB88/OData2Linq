@@ -6,6 +6,7 @@
 //------------------------------------------------------------------------------
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
@@ -13,7 +14,9 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.OData.Deltas;
+using Microsoft.AspNetCore.OData.Edm;
 using Microsoft.AspNetCore.OData.Query.Wrapper;
+using Microsoft.OData.Edm;
 using Microsoft.OData.ModelBuilder;
 
 namespace Microsoft.AspNetCore.OData.Common
@@ -226,12 +229,19 @@ namespace Microsoft.AspNetCore.OData.Common
                 return false;
             }
 
+            // Since IDictionary<T,T> is a collection of KeyValuePair<T,T>
+            if (clrType.IsGenericType && clrType.GetGenericTypeDefinition() == typeof(IDictionary<,>))
+            {
+                return false;
+            }
+
             Type collectionInterface
                 = clrType.GetInterfaces()
                     .Union(new[] { clrType })
                     .FirstOrDefault(
                         t => t.IsGenericType
-                             && t.GetGenericTypeDefinition() == typeof(IEnumerable<>));
+                             && (t.GetGenericTypeDefinition() == typeof(IEnumerable<>)
+                             || t.GetGenericTypeDefinition() == typeof(IAsyncEnumerable<>)));
 
             if (collectionInterface != null)
             {
@@ -240,6 +250,48 @@ namespace Microsoft.AspNetCore.OData.Common
             }
 
             return false;
+        }
+
+        internal static bool IsDictionary(Type clrType)
+        {
+            if (clrType == null)
+            {
+                return false;
+            }
+
+            if (typeof(IDictionary).IsAssignableFrom(clrType))
+            {
+                return true;
+            }
+
+            if (clrType.IsGenericType && clrType.GetGenericTypeDefinition() == typeof(IDictionary<,>))
+            {
+                return true;
+            }
+
+            foreach (var interfaceType in clrType.GetInterfaces())
+            {
+                if (interfaceType.IsGenericType && interfaceType.GetGenericTypeDefinition() == typeof(IDictionary<,>))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        internal static IEdmTypeReference GetUntypedEdmType(Type clrType)
+        {
+            if (clrType == null)
+            {
+                throw Error.ArgumentNull(nameof(clrType));
+            }
+
+            return IsDictionary(clrType) ?
+                    (IEdmTypeReference)EdmUntypedStructuredTypeReference.NullableTypeReference :
+                    (TypeHelper.IsCollection(clrType) ?
+                        (IEdmTypeReference)EdmUntypedHelpers.NullableUntypedCollectionReference :
+                        (IEdmTypeReference)EdmUntypedStructuredTypeReference.NullableTypeReference);
         }
 
         /// <summary>

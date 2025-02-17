@@ -1321,6 +1321,15 @@ namespace Microsoft.AspNetCore.OData {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to OrderBy clause kind &apos;{0}&apos; is not valid. Only kind &apos;{1}&apos; is accepted..
+        /// </summary>
+        internal static string OrderByClauseInvalid {
+            get {
+                return ResourceManager.GetString("OrderByClauseInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Only ordering by properties is supported for non-primitive collections. Expressions are not supported..
         /// </summary>
         internal static string OrderByClauseNotSupported {
@@ -1708,11 +1717,29 @@ namespace Microsoft.AspNetCore.OData {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to SkipToken doesn&apos;t support $orderby expression kind &apos;{0}&apos;. Only support property or simple property path with $orderby when SkipToken enabled..
+        /// </summary>
+        internal static string SkipTokenNotSupportedOrderByExpression {
+            get {
+                return ResourceManager.GetString("SkipTokenNotSupportedOrderByExpression", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Unable to parse the skiptoken value &apos;{0}&apos;. Skiptoken value should always be server generated..
         /// </summary>
         internal static string SkipTokenParseError {
             get {
                 return ResourceManager.GetString("SkipTokenParseError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to get property values from the skiptoken value, or the token value can not match the orderby clause..
+        /// </summary>
+        internal static string SkipTokenProcessingError {
+            get {
+                return ResourceManager.GetString("SkipTokenProcessingError", resourceCulture);
             }
         }
         
@@ -1812,6 +1839,15 @@ namespace Microsoft.AspNetCore.OData {
         internal static string UnableToDetermineMetadataUrl {
             get {
                 return ResourceManager.GetString("UnableToDetermineMetadataUrl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to identify a unique property named &apos;{0}&apos;..
+        /// </summary>
+        internal static string UnableToIdentifyUniqueProperty {
+            get {
+                return ResourceManager.GetString("UnableToIdentifyUniqueProperty", resourceCulture);
             }
         }
         

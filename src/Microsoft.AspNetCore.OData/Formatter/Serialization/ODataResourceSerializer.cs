@@ -6,7 +6,6 @@
 //------------------------------------------------------------------------------
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
@@ -57,7 +56,8 @@ namespace Microsoft.AspNetCore.OData.Formatter.Serialization
                 throw Error.ArgumentNull(nameof(writeContext));
             }
 
-            IEdmTypeReference edmType = writeContext.GetEdmType(graph, type);
+            bool isUntypedPath = writeContext.Path.IsUntypedPropertyPath();
+            IEdmTypeReference edmType = writeContext.GetEdmType(graph, type, isUntypedPath);
             Contract.Assert(edmType != null);
 
             IEdmNavigationSource navigationSource = writeContext.NavigationSource;
@@ -142,13 +142,8 @@ namespace Microsoft.AspNetCore.OData.Formatter.Serialization
                 {
                     await writer.WriteStartAsync(resource).ConfigureAwait(false);
                     await WriteDeltaComplexPropertiesAsync(selectExpandNode, resourceContext, writer).ConfigureAwait(false);
-                    //TODO: Need to add support to write Navigation Links, etc. using Delta Writer
-                    //https://github.com/OData/odata.net/issues/155
-                    //CLEANUP: merge delta logic with regular logic; requires common base between ODataWriter and ODataDeltaWriter
-                    //WriteDynamicComplexProperties(resourceContext, writer);
-                    //WriteNavigationLinks(selectExpandNode.SelectedNavigationProperties, resourceContext, writer);
-                    //WriteExpandedNavigationProperties(selectExpandNode.ExpandedNavigationProperties, resourceContext, writer);
-
+                    await WriteDynamicComplexPropertiesAsync(resourceContext, writer).ConfigureAwait(false);
+                    await WriteDeltaNavigationPropertiesAsync(selectExpandNode, resourceContext, writer).ConfigureAwait(false);
                     await writer.WriteEndAsync().ConfigureAwait(false);
                 }
             }
@@ -168,10 +163,11 @@ namespace Microsoft.AspNetCore.OData.Formatter.Serialization
 
             if (null != resourceContext.EdmObject && resourceContext.EdmObject.IsDeltaResource())
             {
-                IDelta deltaObject = resourceContext.EdmObject as IDelta;
-                IEnumerable<string> changedProperties = deltaObject.GetChangedPropertyNames();
-
-                complexProperties = complexProperties.Where(p => changedProperties.Contains(p.Name));
+                if (resourceContext.EdmObject is TypedEdmEntityObject obj && obj.Instance is IDelta deltaObject)
+                {
+                    IEnumerable<string> changedProperties = deltaObject.GetChangedPropertyNames();
+                    complexProperties = complexProperties.Where(p => changedProperties.Contains(p.Name));
+                }
             }
 
             foreach (IEdmStructuralProperty complexProperty in complexProperties)
@@ -189,8 +185,12 @@ namespace Microsoft.AspNetCore.OData.Formatter.Serialization
             }
         }
 
-        private async Task WriteDeltaComplexAndExpandedNavigationPropertyAsync(IEdmProperty edmProperty, SelectExpandClause selectExpandClause,
-            ResourceContext resourceContext, ODataWriter writer)
+        private async Task WriteDeltaComplexAndExpandedNavigationPropertyAsync(
+            IEdmProperty edmProperty,
+            SelectExpandClause selectExpandClause,
+            ResourceContext resourceContext,
+            ODataWriter writer,
+            Type navigationPropertyType = null)
         {
             Contract.Assert(edmProperty != null);
             Contract.Assert(resourceContext != null);
@@ -223,7 +223,7 @@ namespace Microsoft.AspNetCore.OData.Formatter.Serialization
             {
                 // create the serializer context for the complex and expanded item.
                 ODataSerializerContext nestedWriteContext = new ODataSerializerContext(resourceContext, selectExpandClause, edmProperty);
-
+                nestedWriteContext.Type = navigationPropertyType;
                 // write object.
 
                 // TODO: enable overriding serializer based on type. Currently requires serializer supports WriteDeltaObjectinline, because it takes an ODataDeltaWriter
@@ -236,14 +236,79 @@ namespace Microsoft.AspNetCore.OData.Formatter.Serialization
                 if (edmProperty.Type.IsCollection())
                 {
                     ODataDeltaResourceSetSerializer serializer = new ODataDeltaResourceSetSerializer(SerializerProvider);
-                    await serializer.WriteObjectInlineAsync(propertyValue, edmProperty.Type, writer, nestedWriteContext)
-                        .ConfigureAwait(false);
+                    await serializer.WriteObjectInlineAsync(propertyValue, edmProperty.Type, writer, nestedWriteContext).ConfigureAwait(false);
                 }
                 else
                 {
                     ODataResourceSerializer serializer = new ODataResourceSerializer(SerializerProvider);
-                    await serializer.WriteDeltaObjectInlineAsync(propertyValue, edmProperty.Type, writer, nestedWriteContext)
-                        .ConfigureAwait(false);
+                    await serializer.WriteDeltaObjectInlineAsync(propertyValue, edmProperty.Type, writer, nestedWriteContext).ConfigureAwait(false);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Writes delta navigation properties asynchronously.
+        /// </summary>
+        /// <param name="selectExpandNode">Contains the set of properties and actions to use to select and expand while writing an entity.</param>
+        /// <param name="resourceContext">The resource context for the resource being written.</param>
+        /// <param name="writer">The ODataWriter.</param>
+        /// <returns>A task that represents the asynchronous write operation</returns>
+        internal async Task WriteDeltaNavigationPropertiesAsync(SelectExpandNode selectExpandNode, ResourceContext resourceContext, ODataWriter writer)
+        {
+            Contract.Assert(resourceContext != null, "The ResourceContext cannot be null");
+            Contract.Assert(writer != null, "The ODataWriter cannot be null");
+
+            IEnumerable<KeyValuePair<IEdmNavigationProperty, Type>> navigationProperties = GetNavigationPropertiesToWrite(selectExpandNode, resourceContext);
+
+            foreach (KeyValuePair<IEdmNavigationProperty, Type> navigationProperty in navigationProperties)
+            {
+                ODataNestedResourceInfo nestedResourceInfo = new ODataNestedResourceInfo
+                {
+                    IsCollection = navigationProperty.Key.Type.IsCollection(),
+                    Name = navigationProperty.Key.Name
+                };
+
+                await writer.WriteStartAsync(nestedResourceInfo).ConfigureAwait(false);
+                await WriteDeltaComplexAndExpandedNavigationPropertyAsync(navigationProperty.Key, null, resourceContext, writer, navigationProperty.Value).ConfigureAwait(false);
+                await writer.WriteEndAsync().ConfigureAwait(false);
+            }
+        }
+
+        private IEnumerable<KeyValuePair<IEdmNavigationProperty, Type>> GetNavigationPropertiesToWrite(SelectExpandNode selectExpandNode, ResourceContext resourceContext)
+        {
+            ISet<IEdmNavigationProperty> navigationProperties = selectExpandNode.SelectedNavigationProperties;
+
+            if (navigationProperties == null)
+            {
+                yield break;
+            }
+
+            if (resourceContext.EdmObject is IDelta changedObject)
+            {
+                IEnumerable<string> changedProperties = changedObject.GetChangedPropertyNames();
+
+                foreach (IEdmNavigationProperty navigationProperty in navigationProperties)
+                {
+                    if (changedProperties != null && changedProperties.Contains(navigationProperty.Name))
+                    {
+                        yield return new KeyValuePair<IEdmNavigationProperty, Type>(navigationProperty, typeof(IEdmChangedObject));
+                    }
+                }
+            }
+            else if (resourceContext.ResourceInstance is IDelta deltaObject)
+            {
+                IEnumerable<string> changedProperties = deltaObject.GetChangedPropertyNames();
+                IDictionary<string, object> deltaNestedProperties = deltaObject.GetDeltaNestedNavigationProperties();
+
+                foreach (IEdmNavigationProperty navigationProperty in navigationProperties)
+                {
+                    if (changedProperties != null && changedProperties.Contains(navigationProperty.Name) && deltaNestedProperties.TryGetValue(navigationProperty.Name, out object obj))
+                    {
+                        if (obj != null)
+                        {
+                            yield return new KeyValuePair<IEdmNavigationProperty, Type>(navigationProperty, obj.GetType());
+                        }
+                    }
                 }
             }
         }
@@ -286,7 +351,7 @@ namespace Microsoft.AspNetCore.OData.Formatter.Serialization
                             property = new ODataProperty
                             {
                                 Name = prop.Key,
-                                Value = new ODataNullValue()
+                                Value = ODataNullValueExtensions.NullValue
                             };
                         }
                         else
@@ -393,6 +458,7 @@ namespace Microsoft.AspNetCore.OData.Formatter.Serialization
                     else
                     {
                         await writer.WriteStartAsync(resource).ConfigureAwait(false);
+                        await WriteUntypedPropertiesAsync(selectExpandNode, resourceContext, writer).ConfigureAwait(false);
                         await WriteStreamPropertiesAsync(selectExpandNode, resourceContext, writer).ConfigureAwait(false);
                         await WriteComplexPropertiesAsync(selectExpandNode, resourceContext, writer).ConfigureAwait(false);
                         await WriteDynamicComplexPropertiesAsync(resourceContext, writer).ConfigureAwait(false);
@@ -462,9 +528,10 @@ namespace Microsoft.AspNetCore.OData.Formatter.Serialization
             }
 
             string typeName = resourceContext.StructuredType.FullTypeName();
+
             ODataResource resource = new ODataResource
             {
-                TypeName = typeName,
+                TypeName = typeName ?? "Edm.Untyped",
                 Properties = CreateStructuralPropertyBag(selectExpandNode, resourceContext),
             };
 
@@ -514,7 +581,18 @@ namespace Microsoft.AspNetCore.OData.Formatter.Serialization
 
             if (resourceContext.StructuredType.TypeKind == EdmTypeKind.Entity && resourceContext.NavigationSource != null)
             {
-                if (!(resourceContext.NavigationSource is IEdmContainedEntitySet))
+                // Condition 1. If resourceContext.NavigationSource is a contained entity set
+                //    and a contained resource is being written, the id/read/edit links can be derived
+                //    from the entity set or parent resource, i.e., no need to use link builder to build the links.
+                // Condition 2. If resourceContext.NavigationSource is a contained entity set
+                //    but an expanded non-contained resource is being written,
+                //    deriving the id/read/edit links from the entity set or parent resource will
+                //    most likely result into invalid links.
+                //    A navigation property binding should exist and we should try
+                //    to use the navigation link builder to build the links.
+                // NOTE: resourceContext.SerializerContext.NavigationProperty will not be null when writing an expanded resource
+                if (!(resourceContext.NavigationSource is IEdmContainedEntitySet)
+                    || resourceContext.SerializerContext.NavigationProperty?.ContainsTarget == false)
                 {
                     IEdmModel model = resourceContext.SerializerContext.Model;
                     NavigationSourceLinkBuilderAnnotation linkBuilder = EdmModelLinkBuilderExtensions.GetNavigationSourceLinkBuilder(model, resourceContext.NavigationSource);
@@ -571,9 +649,18 @@ namespace Microsoft.AspNetCore.OData.Formatter.Serialization
 
             IEdmStructuredType structuredType = resourceContext.StructuredType;
             IEdmStructuredObject structuredObject = resourceContext.EdmObject;
+            ODataSerializerContext serializierContext = resourceContext.SerializerContext;
             object value;
             IDelta delta = structuredObject as IDelta;
-            if (delta == null)
+            if (structuredObject is EdmUntypedObject untypedObject) // NO CLR, NO EDM
+            {
+                value = untypedObject;
+            }
+            else if (structuredObject is TypedEdmUntypedObject typedUntypedObject) // has CLR, but no EDM
+            {
+                value = typedUntypedObject.GetProperties();
+            }
+            else if (delta == null)
             {
                 PropertyInfo dynamicPropertyInfo = resourceContext.EdmModel.GetDynamicPropertyDictionary(structuredType);
                 if (dynamicPropertyInfo == null || structuredObject == null ||
@@ -613,34 +700,38 @@ namespace Microsoft.AspNetCore.OData.Formatter.Serialization
                         dynamicProperty.Key, structuredType.FullTypeName());
                 }
 
-                if (dynamicProperty.Value == null)
+                object dynamicPropertyValue = dynamicProperty.Value;
+                if (dynamicPropertyValue == null)
                 {
                     dynamicProperties.Add(new ODataProperty
                     {
                         Name = dynamicProperty.Key,
-                        Value = new ODataNullValue()
+                        Value = ODataNullValueExtensions.NullValue
                     });
 
                     continue;
                 }
 
-                IEdmTypeReference edmTypeReference = resourceContext.SerializerContext.GetEdmType(dynamicProperty.Value,
-                    dynamicProperty.Value.GetType());
-                if (edmTypeReference == null)
+                Type propertyType = dynamicPropertyValue.GetType();
+                IEdmTypeReference edmTypeReference = serializierContext.GetEdmType(dynamicPropertyValue, propertyType, true);
+                if (edmTypeReference == null || edmTypeReference.IsStructuredOrUntyped())
                 {
-                    throw Error.NotSupported(SRResources.TypeOfDynamicPropertyNotSupported,
-                        dynamicProperty.Value.GetType().FullName, dynamicProperty.Key);
-                }
-
-                if (edmTypeReference.IsStructured() ||
-                    (edmTypeReference.IsCollection() && edmTypeReference.AsCollection().ElementType().IsStructured()))
-                {
-                    if (resourceContext.DynamicComplexProperties == null)
+                    if (TypeHelper.IsEnum(propertyType))
                     {
-                        resourceContext.DynamicComplexProperties = new ConcurrentDictionary<string, object>();
+                        // we don't have the Edm enum type in the model, let's write it as string.
+                        dynamicProperties.Add(new ODataProperty
+                        {
+                            Name = dynamicProperty.Key,
+
+                            // TBD: Shall we write the un-declared enum value as full-name string?
+                            // So, "Data":"Apple"  => should be ""Data":"Namespace.EnumTypeName.Apple" ?
+                            Value = dynamicPropertyValue.ToString()
+                        });
+
+                        continue;
                     }
 
-                    resourceContext.DynamicComplexProperties.Add(dynamicProperty);
+                    resourceContext.AppendDynamicOrUntypedProperty(dynamicProperty.Key, dynamicPropertyValue);
                 }
                 else
                 {
@@ -652,7 +743,7 @@ namespace Microsoft.AspNetCore.OData.Formatter.Serialization
                     }
 
                     dynamicProperties.Add(propertySerializer.CreateProperty(
-                        dynamicProperty.Value, edmTypeReference, dynamicProperty.Key, resourceContext.SerializerContext));
+                        dynamicPropertyValue, edmTypeReference, dynamicProperty.Key, serializierContext));
                 }
             }
 
@@ -682,20 +773,25 @@ namespace Microsoft.AspNetCore.OData.Formatter.Serialization
                 IEnumerable<IEdmStructuralProperty> concurrencyProperties;
                 if (model != null && navigationSource != null)
                 {
-                    concurrencyProperties = model.GetConcurrencyProperties(navigationSource).OrderBy(c => c.Name);
+                    concurrencyProperties = model.GetConcurrencyProperties(navigationSource);
                 }
                 else
                 {
                     concurrencyProperties = Enumerable.Empty<IEdmStructuralProperty>();
                 }
 
-                IDictionary<string, object> properties = new Dictionary<string, object>();
+                IDictionary<string, object> properties = null;
                 foreach (IEdmStructuralProperty etagProperty in concurrencyProperties)
                 {
+                    properties ??= new SortedDictionary<string, object>();
+                    
                     properties.Add(etagProperty.Name, resourceContext.GetPropertyValue(etagProperty.Name));
                 }
 
-                return resourceContext.Request.CreateETag(properties, resourceContext.TimeZone);
+                if (properties != null)
+                {
+                    return resourceContext.Request.CreateETag(properties, resourceContext.TimeZone);
+                }
             }
 
             return null;
@@ -744,10 +840,9 @@ namespace Microsoft.AspNetCore.OData.Formatter.Serialization
 
                 IEdmTypeReference edmTypeReference =
                     resourceContext.SerializerContext.GetEdmType(dynamicComplexProperty.Value,
-                        dynamicComplexProperty.Value.GetType());
+                        dynamicComplexProperty.Value.GetType(), true);
 
-                if (edmTypeReference.IsStructured() ||
-                    (edmTypeReference.IsCollection() && edmTypeReference.AsCollection().ElementType().IsStructured()))
+                if (edmTypeReference.IsStructuredOrUntyped())
                 {
                     ODataNestedResourceInfo nestedResourceInfo
                         = CreateDynamicComplexNestedResourceInfo(dynamicComplexProperty.Key, dynamicComplexProperty.Value, edmTypeReference, resourceContext);
@@ -783,6 +878,89 @@ namespace Microsoft.AspNetCore.OData.Formatter.Serialization
             }
 
             await serializer.WriteObjectInlineAsync(propertyValue, edmType, writer, nestedWriteContext).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Writing the declared Edm.Untyped properties.
+        /// </summary>
+        private async Task WriteUntypedPropertiesAsync(SelectExpandNode selectExpandNode, ResourceContext resourceContext, ODataWriter writer)
+        {
+            Contract.Assert(selectExpandNode != null);
+            Contract.Assert(resourceContext != null);
+            Contract.Assert(writer != null);
+
+            if (selectExpandNode.SelectedStructuralProperties == null)
+            {
+                return;
+            }
+
+            foreach (IEdmStructuralProperty structuralProperty in selectExpandNode.SelectedStructuralProperties)
+            {
+                if (structuralProperty.Type == null ||
+                    (!structuralProperty.Type.IsUntyped() && !structuralProperty.Type.IsCollectionUntyped()))
+                {
+                    continue;
+                }
+
+                object propertyValue = CreateUntypedPropertyValue(structuralProperty, resourceContext, out IEdmTypeReference actualType);
+                if (propertyValue == null)
+                {
+                    // if we get a null value, it means to skip it.
+                    continue;
+                }
+
+                if (propertyValue is ODataProperty odataProperty)
+                {
+                    await writer.WriteStartAsync(odataProperty).ConfigureAwait(false);
+                    await writer.WriteEndAsync().ConfigureAwait(false);
+                    continue;
+                }
+
+                // Ok, it's an resource or collection value.
+                if (actualType != null && actualType.IsStructuredOrUntyped())
+                {
+                    ODataNestedResourceInfo nestedResourceInfo
+                        = CreateUntypedNestedResourceInfo(structuralProperty, propertyValue, actualType, null/*not used now*/, resourceContext);
+
+                    if (nestedResourceInfo != null)
+                    {
+                        await writer.WriteStartAsync(nestedResourceInfo).ConfigureAwait(false);
+                        await WriteDynamicComplexPropertyAsync(propertyValue, actualType, resourceContext, writer).ConfigureAwait(false);
+                        await writer.WriteEndAsync().ConfigureAwait(false);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Creates the <see cref="ODataNestedResourceInfo"/> to be written while writing this declared untyped property.
+        /// </summary>
+        /// <param name="structuralProperty">The declared untyped property for which the nested resource info is being created.</param>
+        /// <param name="propertyValue">The declared property real value.</param>
+        /// <param name="valueType">The resolved edm type of the declared property real value.</param>
+        /// <param name="pathSelectItem">The corresponding sub select item belongs to this untyped property.</param>
+        /// <param name="resourceContext">The context for the untyped instance being written.</param>
+        /// <returns>The nested resource info to be written. Returns 'null' will omit this untyped serialization.</returns>
+        /// <remarks>It enables customer to get more control by overriding this method. </remarks>
+        public virtual ODataNestedResourceInfo CreateUntypedNestedResourceInfo(IEdmStructuralProperty structuralProperty,
+            object propertyValue, IEdmTypeReference valueType,
+            PathSelectItem pathSelectItem, ResourceContext resourceContext)
+        {
+            if (structuralProperty == null)
+            {
+                throw Error.ArgumentNull(nameof(structuralProperty));
+            }
+
+            if (valueType != null)
+            {
+                return new ODataNestedResourceInfo
+                {
+                    IsCollection = valueType.IsCollection(),
+                    Name = structuralProperty.Name
+                };
+            }
+
+            return null;
         }
 
         private async Task WriteStreamPropertiesAsync(SelectExpandNode selectExpandNode, ResourceContext resourceContext, ODataWriter writer)
@@ -951,11 +1129,27 @@ namespace Microsoft.AspNetCore.OData.Formatter.Serialization
             foreach (IEdmNavigationProperty navProperty in navigationProperties)
             {
                 ODataNestedResourceInfo navigationLink = CreateNavigationLink(navProperty, resourceContext);
-                if (navigationLink != null)
+                if (ShouldWriteNavigation(navigationLink, resourceContext))
                 {
                     yield return navigationLink;
                 }
             }
+        }
+
+        /// <summary>
+        /// Checks whether a navigation link should be written or not. 
+        /// </summary>
+        /// <param name="navigationLink">The navigation link to be written.</param>
+        /// <param name="resourceContext">The resource context for the resource whose navigation link is being written.</param>
+        /// <returns>true if navigation link should be written; otherwise false.</returns>
+        protected virtual bool ShouldWriteNavigation(ODataNestedResourceInfo navigationLink, ResourceContext resourceContext) 
+        {
+            if (navigationLink?.Url != null || (navigationLink != null && resourceContext.SerializerContext.MetadataLevel == ODataMetadataLevel.Full))
+            {
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -1033,22 +1227,25 @@ namespace Microsoft.AspNetCore.OData.Formatter.Serialization
             IEdmNavigationSource navigationSource = writeContext.NavigationSource;
             ODataNestedResourceInfo navigationLink = null;
 
-            if (navigationSource != null && navigationProperty.Type != null)
+            if (navigationProperty.Type != null)
             {
                 IEdmTypeReference propertyType = navigationProperty.Type;
-                IEdmModel model = writeContext.Model;
-                NavigationSourceLinkBuilderAnnotation linkBuilder = EdmModelLinkBuilderExtensions.GetNavigationSourceLinkBuilder(model, navigationSource);
-                Uri navigationUrl = linkBuilder.BuildNavigationLink(resourceContext, navigationProperty, writeContext.MetadataLevel);
-
                 navigationLink = new ODataNestedResourceInfo
                 {
                     IsCollection = propertyType.IsCollection(),
                     Name = navigationProperty.Name,
                 };
 
-                if (navigationUrl != null)
+                if (navigationSource != null)
                 {
-                    navigationLink.Url = navigationUrl;
+                    IEdmModel model = writeContext.Model;
+                    NavigationSourceLinkBuilderAnnotation linkBuilder = EdmModelLinkBuilderExtensions.GetNavigationSourceLinkBuilder(model, navigationSource);
+                    Uri navigationUrl = linkBuilder.BuildNavigationLink(resourceContext, navigationProperty, writeContext.MetadataLevel);
+
+                    if (navigationUrl != null)
+                    {
+                        navigationLink.Url = navigationUrl;
+                    }
                 }
             }
 
@@ -1060,16 +1257,20 @@ namespace Microsoft.AspNetCore.OData.Formatter.Serialization
             Contract.Assert(selectExpandNode != null);
             Contract.Assert(resourceContext != null);
 
-            List<ODataProperty> properties = new List<ODataProperty>();
+            int propertiesCount = (selectExpandNode.SelectedStructuralProperties?.Count ?? 0) + (selectExpandNode.SelectedComputedProperties?.Count ?? 0);
+            List<ODataProperty> properties = new List<ODataProperty>(propertiesCount);
+
             if (selectExpandNode.SelectedStructuralProperties != null)
             {
                 IEnumerable<IEdmStructuralProperty> structuralProperties = selectExpandNode.SelectedStructuralProperties;
 
                 if (null != resourceContext.EdmObject && resourceContext.EdmObject.IsDeltaResource())
                 {
-                    IDelta deltaObject = resourceContext.EdmObject as IDelta;
-                    IEnumerable<string> changedProperties = deltaObject.GetChangedPropertyNames();
-                    structuralProperties = structuralProperties.Where(p => changedProperties.Contains(p.Name));
+                    if (resourceContext.EdmObject is TypedEdmEntityObject obj && obj.Instance is IDelta deltaObject)
+                    {
+                        IEnumerable<string> changedProperties = deltaObject.GetChangedPropertyNames();
+                        structuralProperties = structuralProperties.Where(p => changedProperties.Contains(p.Name));
+                    }
                 }
 
                 foreach (IEdmStructuralProperty structuralProperty in structuralProperties)
@@ -1077,6 +1278,13 @@ namespace Microsoft.AspNetCore.OData.Formatter.Serialization
                     if (structuralProperty.Type != null && structuralProperty.Type.IsStream())
                     {
                         // skip the stream property, the stream property is written in its own logic
+                        continue;
+                    }
+
+                    if (structuralProperty.Type != null &&
+                        (structuralProperty.Type.IsUntyped() || structuralProperty.Type.IsCollectionUntyped()))
+                    {
+                        // skip it here, we use a different method to write all 'declared' untyped properties
                         continue;
                     }
 
@@ -1181,6 +1389,85 @@ namespace Microsoft.AspNetCore.OData.Formatter.Serialization
 
             // So far, let's return null and let OData.lib to calculate the ODataStreamReferenceValue by conventions.
             return null;
+        }
+
+        /// <summary>
+        /// Creates the property value to be written for the given, declared, "Edm.Untyped" or collection property.
+        /// </summary>
+        /// <param name="structuralProperty">The EDM structural property being written.</param>
+        /// <param name="resourceContext">The context for the entity instance being written.</param>
+        /// <param name="actualType">The inferred actual type.</param>
+        /// <returns>1) return 'null' to skip it.
+        /// 2) return 'ODataProperty' to write it as primitive property.
+        /// 3) otherwise, return the inferred value and its type.</returns>
+        public virtual object CreateUntypedPropertyValue(IEdmStructuralProperty structuralProperty,
+            ResourceContext resourceContext, out IEdmTypeReference actualType)
+        {
+            if (structuralProperty == null)
+            {
+                throw Error.ArgumentNull(nameof(structuralProperty));
+            }
+
+            if (resourceContext == null)
+            {
+                throw Error.ArgumentNull(nameof(resourceContext));
+            }
+
+            actualType = null;
+            if (structuralProperty.Type == null ||
+                (!structuralProperty.Type.IsUntyped() && !structuralProperty.Type.IsCollectionUntyped()))
+            {
+                return null;
+            }
+
+            // Retrieve the original/raw value from Data source.
+            object propertyValue = resourceContext.GetPropertyValue(structuralProperty.Name);
+            if (propertyValue == null)
+            {
+                return new ODataProperty
+                {
+                    Name = structuralProperty.Name,
+                    Value = ODataNullValueExtensions.NullValue
+                };
+            }
+
+            Type propertyType = propertyValue.GetType();
+            ODataSerializerContext writeContext = resourceContext.SerializerContext;
+
+            // Scenarios:
+            // 1) If we can get EdmType from model, Let's use it.
+            // 2) If no (aka, we don't have an Edm type associated). So, let's treat it a Untyped.
+            actualType = writeContext.GetEdmType(propertyValue, propertyType, true);
+
+            if (actualType.IsStructuredOrUntyped())
+            {
+                if (TypeHelper.IsEnum(propertyType))
+                {
+                    // we don't have the Edm enum type in the model, let's write it as string.
+                    return new ODataProperty
+                    {
+                        Name = structuralProperty.Name,
+
+                        // Shall we write the un-declared enum value as full-name string?
+                        // So, "Data":"Apple"  => should be ""Data":"Namespace.EnumTypeName.Apple" ?
+                        // We keep it simple to write it as string (enum member name), not the full-name string.
+                        Value = propertyValue.ToString()
+                    };
+                }
+
+                return propertyValue;
+            }
+
+            // Ok, we have the Edm type associated and it's not strctured or untyped.
+            // we only handle the 'Primitive', the defined 'Enum' or collection of them.
+            IODataEdmTypeSerializer serializer = SerializerProvider.GetEdmTypeSerializer(actualType);
+            if (serializer == null)
+            {
+                throw new SerializationException(
+                    Error.Format(SRResources.TypeCannotBeSerialized, structuralProperty.Type.FullName()));
+            }
+
+            return serializer.CreateProperty(propertyValue, actualType, structuralProperty.Name, writeContext);
         }
 
         /// <summary>
@@ -1573,8 +1860,13 @@ namespace Microsoft.AspNetCore.OData.Formatter.Serialization
         {
             Contract.Assert(graph != null);
 
-            IEdmTypeReference edmType = writeContext.GetEdmType(graph, graph.GetType());
+            IEdmTypeReference edmType = writeContext.GetEdmType(graph, graph.GetType(), true);
             Contract.Assert(edmType != null);
+
+            if (edmType.IsUntyped())
+            {
+                return edmType.ToStructuredTypeReference();
+            }
 
             if (!edmType.IsStructured())
             {

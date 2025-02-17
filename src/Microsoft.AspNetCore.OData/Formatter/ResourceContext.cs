@@ -11,6 +11,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.OData.Common;
+using Microsoft.AspNetCore.OData.Deltas;
 using Microsoft.AspNetCore.OData.Edm;
 using Microsoft.AspNetCore.OData.Formatter.Deserialization;
 using Microsoft.AspNetCore.OData.Formatter.Serialization;
@@ -159,7 +160,11 @@ namespace Microsoft.AspNetCore.OData.Formatter
                 throw Error.InvalidOperation(SRResources.EdmObjectNull, typeof(ResourceContext).Name);
             }
 
-            object value;
+            if (SerializerContext.IsDeltaOfT && ResourceInstance is IDelta delta && delta.TryGetPropertyValue(propertyName, out object value))
+            {
+                return value;
+            }
+
             if (EdmObject.TryGetPropertyValue(propertyName, out value))
             {
                 return value;
@@ -185,10 +190,10 @@ namespace Microsoft.AspNetCore.OData.Formatter
                 return null;
             }
 
-            TypedEdmStructuredObject edmStructruredObject = EdmObject as TypedEdmStructuredObject;
-            if (edmStructruredObject != null)
+            TypedEdmStructuredObject edmStructuredObject = EdmObject as TypedEdmStructuredObject;
+            if (edmStructuredObject != null)
             {
-                return edmStructruredObject.Instance;
+                return edmStructuredObject.Instance;
             }
 
             SelectExpandWrapper selectExpandWrapper = EdmObject as SelectExpandWrapper;
@@ -256,8 +261,23 @@ namespace Microsoft.AspNetCore.OData.Formatter
                 return new TypedEdmEntityObject(resourceInstance, structuredType.AsEntity(), model);
             }
 
+            if (structuredType.IsUntyped())
+            {
+                return new TypedEdmUntypedObject(serializerContext, resourceInstance);
+            }
+
             Contract.Assert(structuredType.IsComplex());
             return new TypedEdmComplexObject(resourceInstance, structuredType.AsComplex(), model);
+        }
+
+        internal void AppendDynamicOrUntypedProperty(string propertyName, object value)
+        {
+            if (DynamicComplexProperties == null)
+            {
+                DynamicComplexProperties = new Dictionary<string, object>();
+            }
+
+            DynamicComplexProperties.Add(propertyName, value);
         }
     }
 }

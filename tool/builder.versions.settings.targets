@@ -2,20 +2,20 @@
   <!-- Set the version number: major, minor, build and release (i.e. alpha, beta or blank for RTM)-->
   <PropertyGroup>
     <VersionMajor Condition="'$(VersionMajor)' == ''">8</VersionMajor>
-    <VersionMinor Condition="'$(VersionMinor)' == ''">1</VersionMinor>
-    <VersionBuild Condition="'$(VersionBuild)' == ''">0</VersionBuild>
+    <VersionMinor Condition="'$(VersionMinor)' == ''">2</VersionMinor>
+    <VersionBuild Condition="'$(VersionBuild)' == ''">5</VersionBuild>
     <VersionRelease Condition="'$(VersionRelease)' == ''"></VersionRelease>
   </PropertyGroup>
   
     <!-- For NuGet Package Dependencies -->
   <PropertyGroup>
-    <ODataLibPackageDependency>[7.15.0, 8.0.0)</ODataLibPackageDependency>
+    <ODataLibPackageDependency>[7.20.0, 8.0.0)</ODataLibPackageDependency>
     <ODataModelBuilderPackageDependency>[1.0.9, 2.0.0)</ODataModelBuilderPackageDependency>
   </PropertyGroup>
 
   <!--
-    Revision number is a date code. Note that this only work for 6 years before the year part (year minus 2020)
-    overflows the UInt16. The system convert below will throw errors when this happens.
+    The revision number is a date code. Note that this only work for 6 years before the year part (year minus 2020)
+    overflows the UInt16. The system conversion below will throw errors when this happens.
   -->
   <PropertyGroup>
     <VersionStartYear Condition="'$(VersionStartYear)' == ''">2020</VersionStartYear>

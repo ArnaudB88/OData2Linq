@@ -257,7 +257,7 @@ namespace Microsoft.AspNetCore.OData
         }
 
         /// <summary>
-        /// Enable $skiptop query option.
+        /// Enable $skiptoken query option.
         /// </summary>
         /// <returns>The current <see cref="ODataOptions"/> instance to enable fluent configuration.</returns>
         public ODataOptions SkipToken()
@@ -288,6 +288,12 @@ namespace Microsoft.AspNetCore.OData
         public bool EnableNoDollarQueryOptions { get; set; } = true;
 
         /// <summary>
+        /// Gets the query settings.
+        /// </summary>
+        [Obsolete("QuerySettings will be removed in the next major version. Use QueryConfigurations instead.")]
+        public DefaultQuerySettings QuerySettings => QueryConfigurations;
+
+        /// <summary>
         /// Gets the query configurations.
         /// </summary>
         public DefaultQueryConfigurations QueryConfigurations { get; } = new DefaultQueryConfigurations();
@@ -305,7 +311,6 @@ namespace Microsoft.AspNetCore.OData
         {
             Contract.Assert(model != null);
 
-            ServiceCollection services = new ServiceCollection();
             DefaultContainerBuilder builder = new DefaultContainerBuilder();
 
             // Inject the core odata services.

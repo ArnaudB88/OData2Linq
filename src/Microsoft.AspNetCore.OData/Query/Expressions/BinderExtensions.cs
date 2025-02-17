@@ -40,6 +40,11 @@ namespace Microsoft.AspNetCore.OData.Query.Expressions
                 throw Error.ArgumentNull(nameof(query));
             }
 
+            if (filterClause == null)
+            {
+                throw Error.ArgumentNull(nameof(filterClause));
+            }
+
             if (context == null)
             {
                 throw Error.ArgumentNull(nameof(context));
@@ -80,6 +85,8 @@ namespace Microsoft.AspNetCore.OData.Query.Expressions
             {
                 throw Error.ArgumentNull(nameof(context));
             }
+
+            context.EnsureFlattenedProperties(context.CurrentParameter, query);
 
             Expression filterExp = binder.BindFilter(filterClause, context);
             return ExpressionHelpers.Where(query, filterExp, context.ElementClrType);

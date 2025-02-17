@@ -255,13 +255,11 @@ namespace Microsoft.AspNetCore.OData.Query
                 binderContext.AddComputedProperties(Compute.ComputeClause.ComputedItems);
             }
 
+            binderContext.EnsureFlattenedProperties(binderContext.CurrentParameter, query);
+
             foreach (OrderByNode node in nodes)
             {
-                OrderByPropertyNode propertyNode = node as OrderByPropertyNode;
-                OrderByOpenPropertyNode openPropertyNode = node as OrderByOpenPropertyNode;
-                OrderByCountNode countNode = node as OrderByCountNode;
-
-                if (propertyNode != null)
+                if (node is OrderByPropertyNode propertyNode)
                 {
                     // Use autonomy class to achieve value equality for HasSet.
                     var edmPropertyWithPath = new { propertyNode.Property, propertyNode.PropertyPath };
@@ -287,7 +285,7 @@ namespace Microsoft.AspNetCore.OData.Query
 
                     alreadyOrdered = true;
                 }
-                else if (openPropertyNode != null)
+                else if (node is OrderByOpenPropertyNode openPropertyNode)
                 {
                     // This check prevents queries with duplicate properties (e.g. $orderby=Id,Id,Id,Id...) from causing stack overflows
                     if (openPropertiesSoFar.Contains(openPropertyNode.PropertyName))
@@ -300,10 +298,15 @@ namespace Microsoft.AspNetCore.OData.Query
                     querySoFar = AddOrderByQueryForProperty(binder, openPropertyNode.OrderByClause, querySoFar, binderContext, alreadyOrdered);
                     alreadyOrdered = true;
                 }
-                else if (countNode != null)
+                else if (node is OrderByCountNode countNode)
                 {
                     Contract.Assert(countNode.OrderByClause != null);
                     querySoFar = AddOrderByQueryForProperty(binder, countNode.OrderByClause, querySoFar, binderContext, alreadyOrdered);
+                    alreadyOrdered = true;
+                }
+                else if (node is OrderByClauseNode clauseNode)
+                {
+                    querySoFar = AddOrderByQueryForProperty(binder, clauseNode.OrderByClause, querySoFar, binderContext, alreadyOrdered);
                     alreadyOrdered = true;
                 }
                 else
@@ -321,6 +324,37 @@ namespace Microsoft.AspNetCore.OData.Query
             }
 
             return querySoFar as IOrderedQueryable;
+        }
+
+        internal List<string> GetOrderByRawValues()
+        {
+            // If the raw value doesn't contain ',', we don't need to process more.
+            // If only one expression (no matter whether it contains ','), we don't need to process more.
+            if (!RawValue.Contains(',') || OrderByClause.ThenBy == null)
+            {
+                return new List<string> { RawValue };
+            }
+
+            ODataUri oDataUri = new ODataUri
+            {
+                ServiceRoot = new Uri("http://localhost"),
+                Path = new ODataPath()
+            };
+            List<string> clauses = new List<string>();
+            OrderByClause clause = OrderByClause;
+            while (clause != null)
+            {
+                // Simply remove the 'thenBy'
+                OrderByClause newClause = new OrderByClause(null, clause.Expression, clause.Direction, clause.RangeVariable);
+                oDataUri.OrderBy = newClause;
+                Uri uri = oDataUri.BuildUri(ODataUrlKeyDelimiter.Parentheses);
+                string orderbyClause = uri.Query.Substring(10);// the length of "?$orderby=" is 10;
+                clauses.Add(Uri.UnescapeDataString(orderbyClause));
+
+                clause = clause.ThenBy;
+            }
+
+            return clauses;
         }
 
         private static IQueryable AddOrderByQueryForProperty(IOrderByBinder orderByBinder,

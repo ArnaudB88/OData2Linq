@@ -62,18 +62,19 @@ namespace Microsoft.AspNetCore.OData.Query
 
             actionExecutingContext.HttpContext.Items.TryAdd(nameof(RequestQueryData), requestQueryData);
 
-            ODataQueryOptions queryOptions = CreateQueryOptionsOnExecuting(actionExecutingContext);
-            if (queryOptions == null)
-            {
-                return; // skip validation
-            }
-
-            // Create and validate the query options.
-            requestQueryData.QueryValidationRunBeforeActionExecution = true;
-            requestQueryData.ProcessedQueryOptions = queryOptions;
-
             try
             {
+                ODataQueryOptions queryOptions = CreateQueryOptionsOnExecuting(actionExecutingContext);
+
+                if (queryOptions == null)
+                {
+                    return; // skip validation
+                }
+
+                // Create and validate the query options.
+                requestQueryData.QueryValidationRunBeforeActionExecution = true;
+                requestQueryData.ProcessedQueryOptions = queryOptions;
+                
                 HttpRequest request = actionExecutingContext.HttpContext.Request;
                 ValidateQuery(request, requestQueryData.ProcessedQueryOptions);
             }
@@ -136,12 +137,19 @@ namespace Microsoft.AspNetCore.OData.Query
                 }
 
                 IEdmType elementType = edmType.AsElementType();
-
                 IEdmModel edmModel = request.GetModel();
 
                 // For Swagger metadata request. elementType is null.
                 if (elementType == null || edmModel == null)
                 {
+                    return null;
+                }
+
+                if (elementType.IsUntyped())
+                {
+                    // TODO: so far, we don't know how to process query on Edm.Untyped.
+                    // So, if the query data type is Edm.Untyped, or collection of Edm.Untyped,
+                    // Let's simply skip it now.
                     return null;
                 }
 
@@ -247,6 +255,20 @@ namespace Microsoft.AspNetCore.OData.Query
                 if (statusCodeResult?.StatusCode == null || IsSuccessStatusCode(statusCodeResult.StatusCode.Value))
                 {
                     ObjectResult responseContent = actionExecutedContext.Result as ObjectResult;
+
+                    ControllerActionDescriptor controllerActionDescriptor = actionDescriptor as ControllerActionDescriptor;
+                    Type returnType = controllerActionDescriptor.MethodInfo.ReturnType;
+
+                    if (returnType.IsGenericType && returnType.GetGenericTypeDefinition() == typeof(ActionResult<>))
+                    {
+                        returnType = returnType.GetGenericArguments().First();
+
+                        if (returnType.IsGenericType && returnType.GetGenericTypeDefinition() == typeof(IAsyncEnumerable<>))
+                        {
+                            responseContent.DeclaredType = returnType;
+                        }
+                    }
+
                     if (responseContent != null)
                     {
                         // Get collection from SingleResult.

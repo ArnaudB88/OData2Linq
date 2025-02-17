@@ -5,10 +5,6 @@
 // </copyright>
 //------------------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.AspNetCore.OData.Abstracts;
 using Microsoft.AspNetCore.OData.Query;
 using Microsoft.AspNetCore.OData.TestCommon;
 using Microsoft.AspNetCore.OData.Tests.Commons;
@@ -18,6 +14,9 @@ using Microsoft.OData.Edm;
 using Microsoft.OData.ModelBuilder;
 using Microsoft.OData.UriParser;
 using Moq;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.OData.Tests.Query
@@ -306,14 +305,15 @@ namespace Microsoft.AspNetCore.OData.Tests.Query
 
         [Theory]
         [InlineData("SharePrice add 1")]
-        public void OrderBy_Throws_For_Expressions(string orderByQuery)
+        [InlineData("tolower(Name)")]
+        public void OrderBy_Works_For_Expressions(string orderByQuery)
         {
             var model = new ODataModelBuilder().Add_Customer_EntityType_With_Address().Add_Customers_EntitySet().GetEdmModel();
             var orderByOption = new OrderByQueryOption(orderByQuery, new ODataQueryContext(model, typeof(Customer)));
 
-            ExceptionAssert.Throws<ODataException>(
-                () => orderByOption.OrderByNodes.Count(),
-                "Only ordering by properties is supported for non-primitive collections. Expressions are not supported.");
+            var nodes = orderByOption.OrderByNodes;
+            OrderByNode orderByNode = Assert.Single(nodes);
+            OrderByClauseNode clauseNode = Assert.IsType<OrderByClauseNode>(orderByNode);
         }
 
         //[Fact]
@@ -399,7 +399,6 @@ namespace Microsoft.AspNetCore.OData.Tests.Query
             Assert.Equal(2, results[1].Id);
             Assert.Equal(1, results[2].Id);
         }
-
 
         [Fact]
         public void ApplyTo_NestedProperties_WithDuplicateName_Succeeds()
@@ -678,16 +677,50 @@ namespace Microsoft.AspNetCore.OData.Tests.Query
         }
 
         [Fact]
-        public void OrderBy_Throws_ParameterAliasNotFound()
+        public void OrderBy_Works_ParameterAlias()
         {
             // Arrange
             var model = new ODataModelBuilder().Add_Customer_EntityType().Add_Customers_EntitySet().GetEdmModel();
             var orderByOption = new OrderByQueryOption("@p", new ODataQueryContext(model, typeof(Customer)));
 
             // Act & Assert
-            ExceptionAssert.Throws<ODataException>(
-                () => orderByOption.OrderByNodes,
-                "Only ordering by properties is supported for non-primitive collections. Expressions are not supported.");
+            var nodes = orderByOption.OrderByNodes;
+            OrderByNode orderByNode = Assert.Single(nodes);
+            OrderByClauseNode clauseNode = Assert.IsType<OrderByClauseNode>(orderByNode);
+        }
+
+        [Fact]
+        public void GetOrderByRawValues_Works_OrderByClause()
+        {
+            // Arrange
+            var model = new ODataModelBuilder().Add_Customer_EntityType_With_Address().Add_Customers_EntitySet().GetEdmModel();
+            var context = new ODataQueryContext(model, typeof(Customer)) { RequestContainer = new MockServiceProvider() };
+            var orderByOption = new OrderByQueryOption("Address/City asc", context);
+
+            // Act
+            List<string> rawValues = orderByOption.GetOrderByRawValues();
+
+            // Assert
+            string clause = Assert.Single(rawValues);
+            Assert.Equal("Address/City asc", clause);
+        }
+
+        [Fact]
+        public void GetOrderByRawValues_Works_MultipleOrderByClause()
+        {
+            // Arrange
+            var model = new ODataModelBuilder().Add_Customer_EntityType_With_Address().Add_Customers_EntitySet().GetEdmModel();
+            var context = new ODataQueryContext(model, typeof(Customer)) { RequestContainer = new MockServiceProvider() };
+            var orderByOption = new OrderByQueryOption("Address/City asc,substring(Name,2,1),tolower(substring(Name,2,1))", context);
+
+            // Act
+            List<string> rawValues = orderByOption.GetOrderByRawValues();
+
+            // Assert
+            Assert.Equal(3, rawValues.Count);
+            Assert.Equal("Address/City", rawValues[0]); // Here, without 'asc' since it's omitted by default
+            Assert.Equal("substring(Name,2,1)", rawValues[1]);
+            Assert.Equal("tolower(substring(Name,2,1))", rawValues[2]);
         }
     }
 }

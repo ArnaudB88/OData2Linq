@@ -1413,6 +1413,11 @@
             enumeration of Property Names
             </summary>
         </member>
+        <member name="M:Microsoft.AspNetCore.OData.Deltas.Delta.GetDeltaNestedNavigationProperties">
+            <summary>
+            Gets the nested resources changed at this level.
+            </summary>
+        </member>
         <member name="T:Microsoft.AspNetCore.OData.Deltas.DeltaDeletedLink`1">
             <summary>
             <see cref="T:Microsoft.AspNetCore.OData.Deltas.DeltaDeletedLink`1" /> allows and tracks changes to delta deleted link.
@@ -1468,6 +1473,18 @@
             <param name="updatableProperties">The set of properties that can be updated or reset. Unknown property
             names, including those of dynamic properties, are ignored.</param>
             <param name="dynamicDictionaryPropertyInfo">The property info that is used as dictionary of dynamic
+            properties. <c>null</c> means this entity type is not open.</param>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Deltas.DeltaDeletedResource`1.#ctor(System.Type,System.Collections.Generic.IEnumerable{System.String},System.Reflection.PropertyInfo,System.Boolean)">
+            <summary>
+            Initializes a new instance of <see cref="T:Microsoft.AspNetCore.OData.Deltas.DeltaDeletedResource`1"/>.
+            </summary>
+            <param name="structuralType">The derived entity type which the changes would be tracked.
+            <paramref name="structuralType"/> should be assignable to instances of <typeparamref name="T"/>.</param>
+            <param name="updatableProperties">The set of properties that can be updated or reset. Unknown property
+            names, including those of dynamic properties, are ignored.</param>
+            <param name="dynamicDictionaryPropertyInfo">The property info that is used as dictionary of dynamic
+            <param name="isComplexType">If structuralType is a complex type.</param>
             properties. <c>null</c> means this entity type is not open.</param>
         </member>
         <member name="P:Microsoft.AspNetCore.OData.Deltas.DeltaDeletedResource`1.Id">
@@ -1633,6 +1650,19 @@
             <param name="dynamicDictionaryPropertyInfo">The property info that is used as dictionary of dynamic
             properties. <c>null</c> means this entity type is not open.</param>
         </member>
+        <member name="M:Microsoft.AspNetCore.OData.Deltas.Delta`1.#ctor(System.Type,System.Collections.Generic.IEnumerable{System.String},System.Reflection.PropertyInfo,System.Boolean)">
+            <summary>
+            Initializes a new instance of <see cref="T:Microsoft.AspNetCore.OData.Deltas.Delta`1"/>.
+            </summary>
+            <param name="structuralType">The derived entity type or complex type for which the changes would be tracked.
+            <paramref name="structuralType"/> should be assignable to instances of <typeparamref name="T"/>.
+            </param>
+            <param name="updatableProperties">The set of properties that can be updated or reset. Unknown property
+            names, including those of dynamic properties, are ignored.</param>
+            <param name="dynamicDictionaryPropertyInfo">The property info that is used as dictionary of dynamic
+            properties. <c>null</c> means this entity type is not open.</param>
+            <param name="isComplexType">If structuralType is a complex type.</param>
+        </member>
         <member name="P:Microsoft.AspNetCore.OData.Deltas.Delta`1.Kind">
             <inheritdoc />
         </member>
@@ -1648,6 +1678,11 @@
             </summary>
             <remarks>When the list is modified, any modified properties that were removed from the list are no longer
             considered to be changed.</remarks>
+        </member>
+        <member name="P:Microsoft.AspNetCore.OData.Deltas.Delta`1.IsComplexType">
+            <summary>
+            If the StructuralType is a Complex type.
+            </summary>
         </member>
         <member name="M:Microsoft.AspNetCore.OData.Deltas.Delta`1.Clear">
             <inheritdoc/>
@@ -1694,6 +1729,11 @@
             properties.
             </summary>
         </member>
+        <member name="M:Microsoft.AspNetCore.OData.Deltas.Delta`1.GetDeltaNestedNavigationProperties">
+            <summary>
+            Gets the nested resources changed at this level.
+            </summary>
+        </member>
         <member name="M:Microsoft.AspNetCore.OData.Deltas.Delta`1.CopyChangedValues(`0)">
             <summary>
             Copies the changed property values from the underlying entity (accessible via <see cref="M:Microsoft.AspNetCore.OData.Deltas.Delta`1.GetInstance" />)
@@ -1714,6 +1754,7 @@
             <remarks>The semantics of this operation are equivalent to a HTTP PATCH operation, hence the name.</remarks>
             </summary>
             <param name="original">The entity to be updated.</param>
+            <returns>The updated entity.</returns>
         </member>
         <member name="M:Microsoft.AspNetCore.OData.Deltas.Delta`1.Put(`0)">
             <summary>
@@ -1761,6 +1802,11 @@
             <summary>
             Returns the Properties that have not been modified through this IDelta as an
             enumerable of Property Names
+            </summary>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Deltas.IDelta.GetDeltaNestedNavigationProperties">
+            <summary>
+            Gets the nested resources changed at this level.
             </summary>
         </member>
         <member name="M:Microsoft.AspNetCore.OData.Deltas.IDelta.TrySetPropertyValue(System.String,System.Object)">
@@ -2117,6 +2163,27 @@
             Provides the functionalities related to the Edm type.
             </summary>
         </member>
+        <member name="M:Microsoft.AspNetCore.OData.Edm.EdmHelpers.IsStructuredOrUntyped(Microsoft.OData.Edm.IEdmTypeReference)">
+            <summary>
+            Tests whether a <see cref="T:Microsoft.OData.Edm.IEdmTypeReference"/> is 'Edm.Untyped' or 'Collection(Edm.Untyped)'.
+            </summary>
+            <param name="edmTypeReference">The test type reference.</param>
+            <returns>True/false.</returns>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Edm.EdmHelpers.IsCollectionUntyped(Microsoft.OData.Edm.IEdmTypeReference)">
+            <summary>
+            Tests whether a <see cref="T:Microsoft.OData.Edm.IEdmTypeReference"/> is 'Collection(Edm.Untyped)'.
+            </summary>
+            <param name="typeReference">The test type reference.</param>
+            <returns>True/false.</returns>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Edm.EdmHelpers.IsUntypedOrCollectionUntyped(Microsoft.OData.Edm.IEdmTypeReference)">
+            <summary>
+            Tests whether a <see cref="T:Microsoft.OData.Edm.IEdmTypeReference"/> is 'Edm.Untyped' or 'Collection(Edm.Untyped)'.
+            </summary>
+            <param name="typeReference">The test type reference.</param>
+            <returns>True/false</returns>
+        </member>
         <member name="M:Microsoft.AspNetCore.OData.Edm.EdmHelpers.GetElementTypeOrSelf(Microsoft.OData.Edm.IEdmTypeReference)">
             <summary>
             Get element type reference if it's collection or return itself
@@ -2126,7 +2193,7 @@
         </member>
         <member name="M:Microsoft.AspNetCore.OData.Edm.EdmHelpers.GetElementType(Microsoft.OData.Edm.IEdmTypeReference)">
             <summary>
-            Get the elementType if it's collection or return itself's type
+            Get the elementType if it's collection or return itself
             </summary>
             <param name="edmTypeReference">The test type reference.</param>
             <returns>Element type or itself.</returns>
@@ -2228,6 +2295,22 @@
             <param name="model">The Edm model.</param>
             <param name="entityType">The Edm entity type.</param>
             <returns>Alternate Keys of this type.</returns>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Edm.EdmModelExtensions.ResolveResourceSetType(Microsoft.OData.Edm.IEdmModel,Microsoft.OData.ODataResourceSetBase)">
+            <summary>
+            Resolve the type reference from the type name of <see cref="T:Microsoft.OData.ODataResourceSetBase"/>
+            </summary>
+            <param name="model">The Edm model.</param>
+            <param name="resourceSet">The given resource set.</param>
+            <returns>The resolved type.</returns>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Edm.EdmModelExtensions.ResolveResourceType(Microsoft.OData.Edm.IEdmModel,Microsoft.OData.ODataResourceBase)">
+            <summary>
+            Resolve the type reference from the type name of <see cref="T:Microsoft.OData.ODataResourceBase"/>
+            </summary>
+            <param name="model">The Edm model.</param>
+            <param name="resource">The given resource.</param>
+            <returns>The resolved type.</returns>
         </member>
         <member name="M:Microsoft.AspNetCore.OData.Edm.EdmModelExtensions.GetAllProperties(Microsoft.OData.Edm.IEdmModel,Microsoft.OData.Edm.IEdmStructuredType)">
             <summary>
@@ -2733,6 +2816,37 @@
             </summary>
             <param name="context">An feed context wrapping the feed instance.</param>
             <returns>The generated link.</returns>
+        </member>
+        <member name="T:Microsoft.AspNetCore.OData.Edm.OrderByClauseHelpers">
+            <summary>
+            Helper methods for <see cref="T:Microsoft.OData.UriParser.OrderByClause"/>.
+            </summary>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Edm.OrderByClauseHelpers.ToList(Microsoft.OData.UriParser.OrderByClause)">
+            <summary>
+            Convert the OrderByClause to list.
+            </summary>
+            <param name="clause">The input orderby clause, the 'ThenBy' in each node does matter.</param>
+            <returns>The output orderby clauses, the 'ThenBy' in each node does NOT matter.</returns>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Edm.OrderByClauseHelpers.IsTopLevelSingleProperty(Microsoft.OData.UriParser.OrderByClause,Microsoft.OData.Edm.IEdmProperty@,System.String@)">
+            <summary>
+            Test the OrderByClause to see whether it's an orderby like: $orderby=name
+            For others, for example, $orderby=location/city is not top-level single property orderby.
+            When we support key alias (key on sub-property or complex property), we should consider to update this.
+            </summary>
+            <param name="clause">The OrderbyClause.</param>
+            <param name="property">The output property.</param>
+            <param name="propertyName">The output property name, it works for dynamic property.</param>
+            <returns>true/false.</returns>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Edm.OrderByClauseHelpers.RemoveDirection(System.String,System.String)">
+            <summary>
+            Remove the ' desc' from the orderby clause.
+            </summary>
+            <param name="orderby">The orderby clause.</param>
+            <param name="direction">The orderby direction.</param>
+            <returns>changed orderby clause.</returns>
         </member>
         <member name="T:Microsoft.AspNetCore.OData.Edm.SelectModelPath">
             <summary>
@@ -3593,6 +3707,33 @@
             <param name="elementType">The element type of the resource set being read.</param>
             <returns>The deserialized resource set object.</returns>
         </member>
+        <member name="M:Microsoft.AspNetCore.OData.Formatter.Deserialization.ODataResourceSetDeserializer.ReadPrimitiveItem(Microsoft.AspNetCore.OData.Formatter.Wrapper.ODataPrimitiveWrapper,Microsoft.OData.Edm.IEdmTypeReference,Microsoft.AspNetCore.OData.Formatter.Deserialization.ODataDeserializerContext)">
+            <summary>
+            Deserializes the given <paramref name="primitiveWrapper"/> under the given <paramref name="readContext"/>.
+            </summary>
+            <param name="primitiveWrapper">The primitive item in a set to deserialize.</param>
+            <param name="elementType">The element type of the parent resource set being read.</param>
+            <param name="readContext">The deserializer context.</param>
+            <returns>The deserialized primitive object.</returns>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Formatter.Deserialization.ODataResourceSetDeserializer.ReadResourceItem(Microsoft.AspNetCore.OData.Formatter.Wrapper.ODataResourceWrapper,Microsoft.OData.Edm.IEdmTypeReference,Microsoft.AspNetCore.OData.Formatter.Deserialization.ODataDeserializerContext)">
+            <summary>
+            Deserializes the given <paramref name="resourceWrapper"/> under the given <paramref name="readContext"/>.
+            </summary>
+            <param name="resourceWrapper">The resource item in a set to deserialize.</param>
+            <param name="elementType">The element type of the parent resource set being read.</param>
+            <param name="readContext">The deserializer context.</param>
+            <returns>The deserialized resource object.</returns>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Formatter.Deserialization.ODataResourceSetDeserializer.ReadResourceSetItem(Microsoft.AspNetCore.OData.Formatter.Wrapper.ODataResourceSetWrapper,Microsoft.OData.Edm.IEdmTypeReference,Microsoft.AspNetCore.OData.Formatter.Deserialization.ODataDeserializerContext)">
+            <summary>
+            Deserializes the given <paramref name="resourceSetWrapper"/> under the given <paramref name="readContext"/>.
+            </summary>
+            <param name="resourceSetWrapper">The resource set item in a set to deserialize.</param>
+            <param name="elementType">The element type of the parent resource set being read.</param>
+            <param name="readContext">The deserializer context.</param>
+            <returns>The deserialized resource set object.</returns>
+        </member>
         <member name="M:Microsoft.AspNetCore.OData.Formatter.EdmLibHelper.GetExpectedPayloadType(System.Type,Microsoft.OData.UriParser.ODataPath,Microsoft.OData.Edm.IEdmModel)">
             <summary>
             Get the expected payload type of an OData path.
@@ -4238,6 +4379,15 @@
             <returns>A new <see cref="T:Microsoft.AspNetCore.OData.Formatter.ResourceSetContext"/>.</returns>
             <remarks>This signature uses types that are AspNetCore-specific.</remarks>
         </member>
+        <member name="M:Microsoft.AspNetCore.OData.Formatter.ResourceSetContext.Create(Microsoft.AspNetCore.OData.Formatter.Serialization.ODataSerializerContext,System.Collections.Generic.IAsyncEnumerable{System.Object})">
+            <summary>
+            Create a <see cref="T:Microsoft.AspNetCore.OData.Formatter.ResourceSetContext"/> from an <see cref="T:Microsoft.AspNetCore.OData.Formatter.Serialization.ODataSerializerContext"/> and <see cref="T:System.Collections.Generic.IAsyncEnumerable`1"/>.
+            </summary>
+            <param name="writeContext">The serializer context.</param>
+            <param name="resourceSetInstance">The instance representing the resourceSet being written.</param>
+            <returns>A new <see cref="T:Microsoft.AspNetCore.OData.Formatter.ResourceSetContext"/>.</returns>
+            <remarks>This signature uses types that are AspNetCore-specific.</remarks>
+        </member>
         <member name="T:Microsoft.AspNetCore.OData.Formatter.Serialization.IODataEdmTypeSerializer">
             <summary>
             Represents an <see cref="T:Microsoft.AspNetCore.OData.Formatter.Serialization.IODataSerializer"/> that serializes instances of objects backed by an <see cref="T:Microsoft.OData.Edm.IEdmType"/>.
@@ -4306,6 +4456,37 @@
             <param name="request">The request for which the response is being serialized.</param>
             <returns>The <see cref="T:Microsoft.AspNetCore.OData.Formatter.Serialization.IODataSerializer"/> for the given type.</returns>
             <remarks>This signature uses types that are AspNetCore-specific.</remarks>
+        </member>
+        <member name="T:Microsoft.AspNetCore.OData.Formatter.Serialization.IUntypedResourceMapper">
+            <summary>
+            The mapper interface to map a resource to a dictionary of properties.
+            </summary>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Formatter.Serialization.IUntypedResourceMapper.Map(System.Object,Microsoft.AspNetCore.OData.Formatter.Serialization.ODataSerializerContext)">
+            <summary>
+            Map the given object to a dictionary.
+            </summary>
+            <param name="resource">The given resource.</param>
+            <param name="context">The serializer context.</param>
+            <returns>The mapped dictionary.</returns>
+        </member>
+        <member name="T:Microsoft.AspNetCore.OData.Formatter.Serialization.DefaultUntypedResourceMapper">
+            <summary>
+            Default implementation of <see cref="T:Microsoft.AspNetCore.OData.Formatter.Serialization.IUntypedResourceMapper"/>.
+            </summary>
+        </member>
+        <member name="F:Microsoft.AspNetCore.OData.Formatter.Serialization.DefaultUntypedResourceMapper.Instance">
+            <summary>
+            Gets the instance
+            </summary>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Formatter.Serialization.DefaultUntypedResourceMapper.Map(System.Object,Microsoft.AspNetCore.OData.Formatter.Serialization.ODataSerializerContext)">
+            <summary>
+            Map the given object to a dictionary.
+            </summary>
+            <param name="resource">The given resource.</param>
+            <param name="context">The serializer context.</param>
+            <returns>The mapped dictionary.</returns>
         </member>
         <member name="T:Microsoft.AspNetCore.OData.Formatter.Serialization.ODataCollectionSerializer">
             <summary>
@@ -4597,6 +4778,15 @@
             <param name="writer">The <see cref="T:Microsoft.OData.ODataDeltaWriter" /> to be used for writing.</param>
             <param name="writeContext">The <see cref="T:Microsoft.AspNetCore.OData.Formatter.Serialization.ODataSerializerContext"/>.</param>
         </member>
+        <member name="M:Microsoft.AspNetCore.OData.Formatter.Serialization.ODataResourceSerializer.WriteDeltaNavigationPropertiesAsync(Microsoft.AspNetCore.OData.Formatter.Serialization.SelectExpandNode,Microsoft.AspNetCore.OData.Formatter.ResourceContext,Microsoft.OData.ODataWriter)">
+            <summary>
+            Writes delta navigation properties asynchronously.
+            </summary>
+            <param name="selectExpandNode">Contains the set of properties and actions to use to select and expand while writing an entity.</param>
+            <param name="resourceContext">The resource context for the resource being written.</param>
+            <param name="writer">The ODataWriter.</param>
+            <returns>A task that represents the asynchronous write operation</returns>
+        </member>
         <member name="M:Microsoft.AspNetCore.OData.Formatter.Serialization.ODataResourceSerializer.CreateSelectExpandNode(Microsoft.AspNetCore.OData.Formatter.ResourceContext)">
             <summary>
             Creates the <see cref="T:Microsoft.AspNetCore.OData.Formatter.Serialization.SelectExpandNode"/> that describes the set of properties and actions to select and expand while writing this entity.
@@ -4635,6 +4825,31 @@
             <summary>
             Write the navigation link for the select navigation properties.
             </summary>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Formatter.Serialization.ODataResourceSerializer.WriteUntypedPropertiesAsync(Microsoft.AspNetCore.OData.Formatter.Serialization.SelectExpandNode,Microsoft.AspNetCore.OData.Formatter.ResourceContext,Microsoft.OData.ODataWriter)">
+            <summary>
+            Writing the declared Edm.Untyped properties.
+            </summary>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Formatter.Serialization.ODataResourceSerializer.CreateUntypedNestedResourceInfo(Microsoft.OData.Edm.IEdmStructuralProperty,System.Object,Microsoft.OData.Edm.IEdmTypeReference,Microsoft.OData.UriParser.PathSelectItem,Microsoft.AspNetCore.OData.Formatter.ResourceContext)">
+            <summary>
+            Creates the <see cref="T:Microsoft.OData.ODataNestedResourceInfo"/> to be written while writing this declared untyped property.
+            </summary>
+            <param name="structuralProperty">The declared untyped property for which the nested resource info is being created.</param>
+            <param name="propertyValue">The declared property real value.</param>
+            <param name="valueType">The resolved edm type of the declared property real value.</param>
+            <param name="pathSelectItem">The corresponding sub select item belongs to this untyped property.</param>
+            <param name="resourceContext">The context for the untyped instance being written.</param>
+            <returns>The nested resource info to be written. Returns 'null' will omit this untyped serialization.</returns>
+            <remarks>It enables customer to get more control by overriding this method. </remarks>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Formatter.Serialization.ODataResourceSerializer.ShouldWriteNavigation(Microsoft.OData.ODataNestedResourceInfo,Microsoft.AspNetCore.OData.Formatter.ResourceContext)">
+            <summary>
+            Checks whether a navigation link should be written or not. 
+            </summary>
+            <param name="navigationLink">The navigation link to be written.</param>
+            <param name="resourceContext">The resource context for the resource whose navigation link is being written.</param>
+            <returns>true if navigation link should be written; otherwise false.</returns>
         </member>
         <member name="M:Microsoft.AspNetCore.OData.Formatter.Serialization.ODataResourceSerializer.CreateDynamicComplexNestedResourceInfo(System.String,System.Object,Microsoft.OData.Edm.IEdmTypeReference,Microsoft.AspNetCore.OData.Formatter.ResourceContext)">
             <summary>
@@ -4681,6 +4896,17 @@
             <param name="resourceContext">The context for the entity instance being written.</param>
             <returns>The <see cref="T:Microsoft.OData.ODataStreamPropertyInfo"/> to write.</returns>
         </member>
+        <member name="M:Microsoft.AspNetCore.OData.Formatter.Serialization.ODataResourceSerializer.CreateUntypedPropertyValue(Microsoft.OData.Edm.IEdmStructuralProperty,Microsoft.AspNetCore.OData.Formatter.ResourceContext,Microsoft.OData.Edm.IEdmTypeReference@)">
+            <summary>
+            Creates the property value to be written for the given, declared, "Edm.Untyped" or collection property.
+            </summary>
+            <param name="structuralProperty">The EDM structural property being written.</param>
+            <param name="resourceContext">The context for the entity instance being written.</param>
+            <param name="actualType">The inferred actual type.</param>
+            <returns>1) return 'null' to skip it.
+            2) return 'ODataProperty' to write it as primitive property.
+            3) otherwise, return the inferred value and its type.</returns>
+        </member>
         <member name="M:Microsoft.AspNetCore.OData.Formatter.Serialization.ODataResourceSerializer.CreateStructuralProperty(Microsoft.OData.Edm.IEdmStructuralProperty,Microsoft.AspNetCore.OData.Formatter.ResourceContext)">
             <summary>
             Creates the <see cref="T:Microsoft.OData.ODataProperty"/> to be written for the given entity and the structural property.
@@ -4722,7 +4948,60 @@
         <member name="M:Microsoft.AspNetCore.OData.Formatter.Serialization.ODataResourceSetSerializer.WriteObjectInlineAsync(System.Object,Microsoft.OData.Edm.IEdmTypeReference,Microsoft.OData.ODataWriter,Microsoft.AspNetCore.OData.Formatter.Serialization.ODataSerializerContext)">
             <inheritdoc />
         </member>
+        <member name="M:Microsoft.AspNetCore.OData.Formatter.Serialization.ODataResourceSetSerializer.WritePrimitiveItemAsync(System.Object,Microsoft.OData.Edm.IEdmTypeReference,Microsoft.OData.Edm.IEdmTypeReference,Microsoft.OData.ODataWriter,Microsoft.AspNetCore.OData.Formatter.Serialization.ODataSerializerContext)">
+            <summary>
+            Write a primitive value into a collection (untyped collection)
+            </summary>
+            <param name="primitiveValue">The primitive value.</param>
+            <param name="primitiveType">The primitive edm type.</param>
+            <param name="parentSetType">The parent collection edm type.</param>
+            <param name="writer">The writer.</param>
+            <param name="writeContext">The writer context.</param>
+            <returns>Task.</returns>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Formatter.Serialization.ODataResourceSetSerializer.WriteEnumItemAsync(System.Object,Microsoft.OData.Edm.IEdmTypeReference,Microsoft.OData.Edm.IEdmTypeReference,Microsoft.OData.ODataWriter,Microsoft.AspNetCore.OData.Formatter.Serialization.ODataSerializerContext)">
+            <summary>
+            Write an enum value into a collection (untyped collection)
+            </summary>
+            <param name="enumValue">The enum value.</param>
+            <param name="enumType">The enum edm type or null if no edm type defined.</param>
+            <param name="parentSetType">The parent collection edm type.</param>
+            <param name="writer">The writer.</param>
+            <param name="writeContext">The writer context.</param>
+            <returns>Task.</returns>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Formatter.Serialization.ODataResourceSetSerializer.WriteResourceSetItemAsync(System.Object,Microsoft.OData.Edm.IEdmTypeReference,Microsoft.OData.Edm.IEdmTypeReference,Microsoft.OData.ODataWriter,Microsoft.AspNetCore.OData.Formatter.Serialization.ODataSerializerContext)">
+            <summary>
+            Write a nested collection value into a collection (untyped collection)
+            </summary>
+            <param name="itemSetValue">The collection value.</param>
+            <param name="itemSetType">The nested collection Edm type.</param>
+            <param name="parentSetType">The parent collection edm type.</param>
+            <param name="writer">The writer.</param>
+            <param name="writeContext">The writer context.</param>
+            <returns>Task.</returns>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Formatter.Serialization.ODataResourceSetSerializer.WriteResourceItemAsync(System.Object,Microsoft.OData.Edm.IEdmTypeReference,Microsoft.OData.Edm.IEdmTypeReference,Microsoft.OData.ODataWriter,Microsoft.AspNetCore.OData.Formatter.Serialization.ODataSerializerContext)">
+            <summary>
+            Write a nested resource/object into a collection (untyped collection)
+            </summary>
+            <param name="resourceValue">The resource value.</param>
+            <param name="resourceType">The nested resource Edm type.</param>
+            <param name="parentSetType">The parent collection edm type.</param>
+            <param name="writer">The writer.</param>
+            <param name="writeContext">The writer context.</param>
+            <returns>Task.</returns>
+        </member>
         <member name="M:Microsoft.AspNetCore.OData.Formatter.Serialization.ODataResourceSetSerializer.CreateResourceSet(System.Collections.IEnumerable,Microsoft.OData.Edm.IEdmCollectionTypeReference,Microsoft.AspNetCore.OData.Formatter.Serialization.ODataSerializerContext)">
+            <summary>
+            Create the <see cref="T:Microsoft.OData.ODataResourceSet"/> to be written for the given resourceSet instance.
+            </summary>
+            <param name="resourceSetInstance">The instance representing the resourceSet being written.</param>
+            <param name="resourceSetType">The EDM type of the resourceSet being written.</param>
+            <param name="writeContext">The serializer context.</param>
+            <returns>The created <see cref="T:Microsoft.OData.ODataResourceSet"/> object.</returns>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Formatter.Serialization.ODataResourceSetSerializer.CreateResourceSet(System.Collections.Generic.IAsyncEnumerable{System.Object},Microsoft.OData.Edm.IEdmCollectionTypeReference,Microsoft.AspNetCore.OData.Formatter.Serialization.ODataSerializerContext)">
             <summary>
             Create the <see cref="T:Microsoft.OData.ODataResourceSet"/> to be written for the given resourceSet instance.
             </summary>
@@ -4734,6 +5013,15 @@
         <member name="M:Microsoft.AspNetCore.OData.Formatter.Serialization.ODataResourceSetSerializer.GetNextLinkGenerator(Microsoft.OData.ODataResourceSetBase,System.Collections.IEnumerable,Microsoft.AspNetCore.OData.Formatter.Serialization.ODataSerializerContext)">
             <summary>
             Creates a function that takes in an object and generates nextlink uri.
+            </summary>
+            <param name="resourceSet">The resource set describing a collection of structured objects.</param>
+            <param name="resourceSetInstance">The instance representing the resourceSet being written.</param>
+            <param name="writeContext">The serializer context.</param>
+            <returns>The function that generates the NextLink from an object.</returns>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Formatter.Serialization.ODataResourceSetSerializer.GetNextLinkGenerator(Microsoft.OData.ODataResourceSetBase,System.Collections.Generic.IAsyncEnumerable{System.Object},Microsoft.AspNetCore.OData.Formatter.Serialization.ODataSerializerContext)">
+            <summary>
+            Creates a function that takes in an object and generates a nextlink uri.
             </summary>
             <param name="resourceSet">The resource set describing a collection of structured objects.</param>
             <param name="resourceSetInstance">The instance representing the resourceSet being written.</param>
@@ -5600,10 +5888,32 @@
         <member name="M:Microsoft.AspNetCore.OData.Formatter.Value.EdmStructuredObject.GetChangedPropertyNames">
             <inheritdoc/>
         </member>
+        <member name="M:Microsoft.AspNetCore.OData.Formatter.Value.EdmStructuredObject.GetDeltaNestedNavigationProperties">
+            <inheritdoc/>
+        </member>
         <member name="M:Microsoft.AspNetCore.OData.Formatter.Value.EdmStructuredObject.GetUnchangedPropertyNames">
             <inheritdoc/>
         </member>
         <member name="M:Microsoft.AspNetCore.OData.Formatter.Value.EdmStructuredObject.GetEdmType">
+            <inheritdoc/>
+        </member>
+        <member name="T:Microsoft.AspNetCore.OData.Formatter.Value.EdmUntypedCollection">
+            <summary>
+            Represents an <see cref="T:Microsoft.AspNetCore.OData.Formatter.Value.IEdmObject"/> that is a collection of untyped values.
+            </summary>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Formatter.Value.EdmUntypedCollection.GetEdmType">
+            <inheritdoc/>
+        </member>
+        <member name="T:Microsoft.AspNetCore.OData.Formatter.Value.EdmUntypedObject">
+            <summary>
+            Represents an <see cref="T:Microsoft.AspNetCore.OData.Formatter.Value.IEdmUntypedObject"/> with no backing Edm type, or its Edm.Untyped.
+            </summary>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Formatter.Value.EdmUntypedObject.GetEdmType">
+            <inheritdoc/>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Formatter.Value.EdmUntypedObject.TryGetPropertyValue(System.String,System.Object@)">
             <inheritdoc/>
         </member>
         <member name="T:Microsoft.AspNetCore.OData.Formatter.Value.IEdmChangedObject">
@@ -5707,6 +6017,12 @@
             otherwise, null. The parameter is passed uninitialized.</param>
             <returns><c>true</c> if the instance contains the property with the given name; otherwise, <c>false</c>.</returns>
         </member>
+        <member name="T:Microsoft.AspNetCore.OData.Formatter.Value.IEdmUntypedObject">
+            <summary>
+            Represents an instance of an untyped structured object.
+            Untyped means this structured Edm type is "Edm.Untyped" or no Edm type.
+            </summary>
+        </member>
         <member name="T:Microsoft.AspNetCore.OData.Formatter.Value.NullEdmComplexObject">
             <summary>
             Represents an <see cref="T:Microsoft.AspNetCore.OData.Formatter.Value.IEdmComplexObject"/> that is null.
@@ -5778,6 +6094,24 @@
         </member>
         <member name="M:Microsoft.AspNetCore.OData.Formatter.Value.TypedEdmStructuredObject.TryGetPropertyValue(System.String,System.Object@)">
             <inheritdoc/>
+        </member>
+        <member name="T:Microsoft.AspNetCore.OData.Formatter.Value.PropertyGetterCacheEqualityComparer">
+            <summary>
+            A custom equality comparer for the property getter cache. 
+            </summary>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Formatter.Value.PropertyGetterCacheEqualityComparer.GetHashCode(System.ValueTuple{System.String,System.Type})">
+            <summary>
+            This method overrides the default GetHashCode() implementation
+            for a tuple of (string, Type) to provide a more effective hash code.
+            </summary>
+            <param name="obj">The tuple object to calculate a hash code for</param>
+            <returns>The calculated hash code. </returns>
+        </member>
+        <member name="T:Microsoft.AspNetCore.OData.Formatter.Value.TypedEdmUntypedObject">
+            <summary>
+            Represents an <see cref="T:Microsoft.AspNetCore.OData.Formatter.Value.IEdmUntypedObject"/> backed by a CLR object without Edm type.
+            </summary>
         </member>
         <member name="T:Microsoft.AspNetCore.OData.Formatter.Wrapper.ODataDeltaDeletedLinkWrapper">
             <summary>
@@ -5884,6 +6218,22 @@
             Gets the nested items that are part of this nested resource info.
             </summary>
         </member>
+        <member name="T:Microsoft.AspNetCore.OData.Formatter.Wrapper.ODataPrimitiveWrapper">
+            <summary>
+            Encapsulates <see cref="T:Microsoft.OData.ODataPrimitiveValue"/> in an Untyped (declared or undeclared) collection.
+            </summary>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Formatter.Wrapper.ODataPrimitiveWrapper.#ctor(Microsoft.OData.ODataPrimitiveValue)">
+            <summary>
+            Initializes a new instance of <see cref="T:Microsoft.AspNetCore.OData.Formatter.Wrapper.ODataPrimitiveWrapper"/>.
+            </summary>
+            <param name="value">The wrapped primitive value.</param>
+        </member>
+        <member name="P:Microsoft.AspNetCore.OData.Formatter.Wrapper.ODataPrimitiveWrapper.Value">
+            <summary>
+            Gets the wrapped <see cref="T:Microsoft.OData.ODataPrimitiveValue"/>.
+            </summary>
+        </member>
         <member name="T:Microsoft.AspNetCore.OData.Formatter.Wrapper.ODataReaderExtensions">
             <summary>
             Extension methods for <see cref="T:Microsoft.OData.ODataReader"/>.
@@ -5907,7 +6257,7 @@
             <summary>
             Read OData item.
             </summary>
-            <param name="reader">The odata reader.</param>
+            <param name="reader">The OData reader.</param>
             <param name="itemsStack">The item stack.</param>
             <param name="topLevelItem">The top level item.</param>
         </member>
@@ -5967,6 +6317,15 @@
             <summary>
             Gets the nested resources of this ResourceSet.
             Resource set only contains resources.
+            </summary>
+        </member>
+        <member name="P:Microsoft.AspNetCore.OData.Formatter.Wrapper.ODataResourceSetWrapper.Items">
+            <summary>
+            Gets the nested items of this ResourceSet.
+            Since we have 'Resources' to contain ODataResource items in the collection (we have to keep it avoid breaking changes).
+            This list is used to hold other items also, for example a primitive or a collection, etc.
+            I assume the order of items does matter, so 'Items' contains all 'Resources' item to keep the same order.
+            In the next major release, we should combine 'Resources' and 'Items' together.
             </summary>
         </member>
         <member name="T:Microsoft.AspNetCore.OData.Formatter.Wrapper.ODataResourceWrapper">
@@ -6259,7 +6618,7 @@
         </member>
         <member name="M:Microsoft.AspNetCore.OData.ODataOptions.SkipToken">
             <summary>
-            Enable $skiptop query option.
+            Enable $skiptoken query option.
             </summary>
             <returns>The current <see cref="T:Microsoft.AspNetCore.OData.ODataOptions"/> instance to enable fluent configuration.</returns>
         </member>
@@ -6273,6 +6632,11 @@
         <member name="P:Microsoft.AspNetCore.OData.ODataOptions.EnableNoDollarQueryOptions">
             <summary>
             Gets or sets whether or not the OData system query options should be prefixed with '$'.
+            </summary>
+        </member>
+        <member name="P:Microsoft.AspNetCore.OData.ODataOptions.QuerySettings">
+            <summary>
+            Gets the query settings.
             </summary>
         </member>
         <member name="P:Microsoft.AspNetCore.OData.ODataOptions.QueryConfigurations">
@@ -7092,6 +7456,11 @@
               Looks up a localized string similar to Action import and function import &apos;{0}&apos; MUST be unique within an entity container..
             </summary>
         </member>
+        <member name="P:Microsoft.AspNetCore.OData.SRResources.OrderByClauseInvalid">
+            <summary>
+              Looks up a localized string similar to OrderBy clause kind &apos;{0}&apos; is not valid. Only kind &apos;{1}&apos; is accepted..
+            </summary>
+        </member>
         <member name="P:Microsoft.AspNetCore.OData.SRResources.OrderByClauseNotSupported">
             <summary>
               Looks up a localized string similar to Only ordering by properties is supported for non-primitive collections. Expressions are not supported..
@@ -7307,9 +7676,19 @@
               Looks up a localized string similar to The action &apos;{0}&apos; on controller &apos;{1}&apos; returned a {2} containing more than one element. {2} must have zero or one elements..
             </summary>
         </member>
+        <member name="P:Microsoft.AspNetCore.OData.SRResources.SkipTokenNotSupportedOrderByExpression">
+            <summary>
+              Looks up a localized string similar to SkipToken doesn&apos;t support $orderby expression kind &apos;{0}&apos;. Only support property or simple property path with $orderby when SkipToken enabled..
+            </summary>
+        </member>
         <member name="P:Microsoft.AspNetCore.OData.SRResources.SkipTokenParseError">
             <summary>
               Looks up a localized string similar to Unable to parse the skiptoken value &apos;{0}&apos;. Skiptoken value should always be server generated..
+            </summary>
+        </member>
+        <member name="P:Microsoft.AspNetCore.OData.SRResources.SkipTokenProcessingError">
+            <summary>
+              Looks up a localized string similar to Unable to get property values from the skiptoken value, or the token value can not match the orderby clause..
             </summary>
         </member>
         <member name="P:Microsoft.AspNetCore.OData.SRResources.SkipTopLimitExceeded">
@@ -7365,6 +7744,11 @@
         <member name="P:Microsoft.AspNetCore.OData.SRResources.UnableToDetermineMetadataUrl">
             <summary>
               Looks up a localized string similar to The OData formatter must be able to determine the metadata URL for a request in order to serialize the response..
+            </summary>
+        </member>
+        <member name="P:Microsoft.AspNetCore.OData.SRResources.UnableToIdentifyUniqueProperty">
+            <summary>
+              Looks up a localized string similar to Unable to identify a unique property named &apos;{0}&apos;..
             </summary>
         </member>
         <member name="P:Microsoft.AspNetCore.OData.SRResources.UnaryNodeValidationNotSupported">
@@ -8017,44 +8401,6 @@
             This class describes the default configurations to use during query composition.
             </summary>
         </member>
-        <member name="P:Microsoft.AspNetCore.OData.Query.DefaultQueryConfigurations.EnableExpand">
-            <summary>
-            Gets or sets a value indicating whether navigation property can be expanded.
-            </summary>
-        </member>
-        <member name="P:Microsoft.AspNetCore.OData.Query.DefaultQueryConfigurations.EnableSelect">
-            <summary>
-            Gets or sets a value indicating whether property can be selected.
-            </summary>
-        </member>
-        <member name="P:Microsoft.AspNetCore.OData.Query.DefaultQueryConfigurations.EnableCount">
-            <summary>
-            Gets or sets a value indicating whether entity set and property can apply $count.
-            </summary>
-        </member>
-        <member name="P:Microsoft.AspNetCore.OData.Query.DefaultQueryConfigurations.EnableOrderBy">
-            <summary>
-            Gets or sets a value indicating whether property can apply $orderby.
-            </summary>
-        </member>
-        <member name="P:Microsoft.AspNetCore.OData.Query.DefaultQueryConfigurations.EnableFilter">
-            <summary>
-            Gets or sets a value indicating whether property can apply $filter.
-            </summary>
-        </member>
-        <member name="P:Microsoft.AspNetCore.OData.Query.DefaultQueryConfigurations.MaxTop">
-            <summary>
-            Gets or sets the max value of $top that a client can request.
-            </summary>
-            <value>
-            The max value of $top that a client can request, or <c>null</c> if there is no limit.
-            </value>
-        </member>
-        <member name="P:Microsoft.AspNetCore.OData.Query.DefaultQueryConfigurations.EnableSkipToken">
-            <summary>
-            Gets or sets a value indicating whether the service will use skiptoken or not.
-            </summary>
-        </member>
         <member name="T:Microsoft.AspNetCore.OData.Query.EnableQueryAttribute">
             <summary>
             This partial class defines the configuration on <see cref="T:Microsoft.AspNetCore.OData.Query.EnableQueryAttribute"/>.
@@ -8616,12 +8962,6 @@
             <summary>
             Flattened list of properties from base query, for case when binder is applied for aggregated query.
             </summary>
-        </member>
-        <member name="M:Microsoft.AspNetCore.OData.Query.Expressions.ExpressionBinderBase.#ctor(System.IServiceProvider)">
-            <summary>
-            Initializes a new instance of the <see cref="T:Microsoft.AspNetCore.OData.Query.Expressions.ExpressionBinderBase"/> class.
-            </summary>
-            <param name="requestContainer">The request container.</param>
         </member>
         <member name="M:Microsoft.AspNetCore.OData.Query.Expressions.ExpressionBinderBase.Bind(Microsoft.OData.UriParser.QueryNode)">
             <summary>
@@ -9312,6 +9652,12 @@
             All parameters present in current context.
             </summary>
         </member>
+        <member name="M:Microsoft.AspNetCore.OData.Query.Expressions.QueryBinderContext.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Microsoft.AspNetCore.OData.Query.Expressions.QueryBinderContext" /> class.
+            For unit-test only
+            </summary>
+        </member>
         <member name="M:Microsoft.AspNetCore.OData.Query.Expressions.QueryBinderContext.#ctor(Microsoft.OData.Edm.IEdmModel,Microsoft.AspNetCore.OData.Query.ODataQuerySettings,System.Type)">
             <summary>
             Initializes a new instance of the <see cref="T:Microsoft.AspNetCore.OData.Query.Expressions.QueryBinderContext" /> class.
@@ -9351,6 +9697,22 @@
         <member name="P:Microsoft.AspNetCore.OData.Query.Expressions.QueryBinderContext.ComputedProperties">
             <summary>
             Gets the compute expressions.
+            </summary>
+        </member>
+        <member name="P:Microsoft.AspNetCore.OData.Query.Expressions.QueryBinderContext.OrderByClauses">
+            <summary>
+            Gets/sets the orderby clause.
+            Since we 'overlap' the orderby clause to list, then the 'ThenBy' does NOT matter again, please ignore it.
+            </summary>
+        </member>
+        <member name="P:Microsoft.AspNetCore.OData.Query.Expressions.QueryBinderContext.EnableSkipToken">
+            <summary>
+            Gets/sets the enable skip token, it's for nested orderby.
+            </summary>
+        </member>
+        <member name="P:Microsoft.AspNetCore.OData.Query.Expressions.QueryBinderContext.FlattenedProperties">
+            <summary>
+            Flattened list of properties from base query, for case when binder is applied for aggregated query.
             </summary>
         </member>
         <member name="P:Microsoft.AspNetCore.OData.Query.Expressions.QueryBinderContext.ElementType">
@@ -9530,6 +9892,17 @@
             <param name="structuredType">The structured type contains the dynamic property.</param>
             <param name="includedProperties">The container to hold the created property.</param>
         </member>
+        <member name="M:Microsoft.AspNetCore.OData.Query.Expressions.SelectExpandBinder.BindOrderByProperties(Microsoft.AspNetCore.OData.Query.Expressions.QueryBinderContext,System.Linq.Expressions.Expression,Microsoft.OData.Edm.IEdmStructuredType,System.Collections.Generic.IList{Microsoft.AspNetCore.OData.Query.Container.NamedPropertyExpression},System.Boolean)">
+            <summary>
+            Build the orderby clause into the included properties.
+            For example: $orderby=tolower(substring(name,1,2))
+            </summary>
+            <param name="context">The query binder context.</param>
+            <param name="source">The source.</param>
+            <param name="structuredType">The structured type.</param>
+            <param name="includedProperties">The container to hold the created property.</param>
+            <param name="isSelectedAll">Is select all flag.</param>
+        </member>
         <member name="M:Microsoft.AspNetCore.OData.Query.Expressions.SelectExpandBinder.CreateTypeNameExpression(System.Linq.Expressions.Expression,Microsoft.OData.Edm.IEdmStructuredType,Microsoft.OData.Edm.IEdmModel)">
             <summary>
             Create <see cref="T:System.Linq.Expressions.Expression"/> for Derived types.
@@ -9618,7 +9991,7 @@
         </member>
         <member name="T:Microsoft.AspNetCore.OData.Query.HttpRequestODataQueryExtensions">
             <summary>
-            
+            Extensions for ETag.
             </summary>
         </member>
         <member name="M:Microsoft.AspNetCore.OData.Query.HttpRequestODataQueryExtensions.GetETag(Microsoft.AspNetCore.Http.HttpRequest,Microsoft.Net.Http.Headers.EntityTagHeaderValue)">
@@ -9694,6 +10067,27 @@
             Copy the $filter configuration of properties.
             </summary>
         </member>
+        <member name="T:Microsoft.AspNetCore.OData.Query.OrderByClauseNode">
+            <summary>
+            Represents the order by expression in the $orderby clause.
+            Use this to represent other $orderby except 'Property,OpenProperty,$count, $it' orderBy expression.
+            </summary>
+            <remarks>
+            Again, in the next major release, we don't need this class.
+            Track on it at: https://github.com/OData/AspNetCoreOData/issues/1153
+            </remarks>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Query.OrderByClauseNode.#ctor(Microsoft.OData.UriParser.OrderByClause)">
+            <summary>
+            Instantiates a new instance of <see cref="T:Microsoft.AspNetCore.OData.Query.OrderByClauseNode"/> class.
+            </summary>
+            <param name="orderByClause">The order by clause.</param>
+        </member>
+        <member name="P:Microsoft.AspNetCore.OData.Query.OrderByClauseNode.OrderByClause">
+            <summary>
+            Gets the <see cref="P:Microsoft.AspNetCore.OData.Query.OrderByClauseNode.OrderByClause"/> of this node.
+            </summary>
+        </member>
         <member name="T:Microsoft.AspNetCore.OData.Query.OrderByCountNode">
             <summary>
             Represents an order by <see cref="T:Microsoft.OData.Edm.IEdmProperty"/> expression.
@@ -9721,10 +10115,25 @@
             </summary>
             <param name="direction">The <see cref="T:Microsoft.OData.UriParser.OrderByDirection"/> for this node.</param>
         </member>
+        <member name="M:Microsoft.AspNetCore.OData.Query.OrderByItNode.#ctor(Microsoft.OData.UriParser.OrderByClause)">
+            <summary>
+            Instantiates a new instance of <see cref="T:Microsoft.AspNetCore.OData.Query.OrderByItNode"/> class.
+            </summary>
+            <param name="clause">The orderby clause.</param>
+        </member>
+        <member name="P:Microsoft.AspNetCore.OData.Query.OrderByItNode.Name">
+            <summary>
+            Gets the range variable name
+            </summary>
+        </member>
         <member name="T:Microsoft.AspNetCore.OData.Query.OrderByNode">
             <summary>
             Represents a single order by expression in the $orderby clause.
             </summary>
+            <remarks>
+            Why do we need this class and its derived type? only fetch the PropertyPath? In the next major release, we can consider to remove all of these.
+            Track on it at: https://github.com/OData/AspNetCoreOData/issues/1153
+            </remarks>
         </member>
         <member name="M:Microsoft.AspNetCore.OData.Query.OrderByNode.#ctor(Microsoft.OData.UriParser.OrderByDirection)">
             <summary>
@@ -10779,14 +11188,14 @@
             <param name="context">Serializer context</param>
             <returns>Returns the URI for NextPageLink. If a null object is passed for the instance, resorts to the default paging mechanism of using $skip and $top.</returns>
         </member>
-        <member name="M:Microsoft.AspNetCore.OData.Query.DefaultSkipTokenHandler.GenerateSkipTokenValue(System.Object,Microsoft.OData.Edm.IEdmModel,System.Collections.Generic.IList{Microsoft.AspNetCore.OData.Query.OrderByNode},System.TimeZoneInfo)">
+        <member name="M:Microsoft.AspNetCore.OData.Query.DefaultSkipTokenHandler.GenerateSkipTokenValue(System.Object,Microsoft.OData.Edm.IEdmModel,Microsoft.OData.UriParser.OrderByClause,Microsoft.AspNetCore.OData.Formatter.Serialization.ODataSerializerContext)">
             <summary>
             Generates a string to be used as the skip token value within the next link.
             </summary>
             <param name="lastMember"> Object based on which SkipToken value will be generated.</param>
             <param name="model">The edm model.</param>
-            <param name="orderByNodes">List of orderByNodes used to generate the skiptoken value.</param>
-            <param name="timeZoneInfo">The timezone info.</param>
+            <param name="clause">The orderby clause to generate the skiptoken value.</param>
+            <param name="context">The serializer context.</param>
             <returns>Value for the skiptoken to be used in the next link.</returns>
         </member>
         <member name="M:Microsoft.AspNetCore.OData.Query.DefaultSkipTokenHandler.ApplyTo``1(System.Linq.IQueryable{``0},Microsoft.AspNetCore.OData.Query.SkipTokenQueryOption,Microsoft.AspNetCore.OData.Query.ODataQuerySettings,Microsoft.AspNetCore.OData.Query.ODataQueryOptions)">
@@ -10809,33 +11218,14 @@
             <param name="queryOptions">Information about the other query options, could be null.</param>
             <returns>The new <see cref="T:System.Linq.IQueryable"/> after the skiptoken query has been applied to.</returns>
         </member>
-        <member name="M:Microsoft.AspNetCore.OData.Query.DefaultSkipTokenHandler.ApplyToCore(System.Linq.IQueryable,Microsoft.AspNetCore.OData.Query.ODataQuerySettings,System.Collections.Generic.IList{Microsoft.AspNetCore.OData.Query.OrderByNode},Microsoft.AspNetCore.OData.Query.ODataQueryContext,System.String)">
+        <member name="M:Microsoft.AspNetCore.OData.Query.DefaultSkipTokenHandler.GetOrderByClauses(System.Object,Microsoft.OData.Edm.IEdmModel,Microsoft.OData.UriParser.OrderByClause)">
             <summary>
-            Core logic for applying the query option to the IQueryable. 
+            Get all orderby clause and append the keys if apply
             </summary>
-            <param name="query">The original <see cref="T:System.Linq.IQueryable"/>.</param>
-            <param name="querySettings">Query setting used for validating the query option.</param>
-            <param name="orderByNodes">OrderBy information required to correctly apply the query option for default implementation.</param>
-            <param name="context">The <see cref="T:Microsoft.AspNetCore.OData.Query.ODataQueryContext"/> which contains the <see cref="T:Microsoft.OData.Edm.IEdmModel"/> and some type information</param>
-            <param name="skipTokenRawValue">The raw string value of the skiptoken query parameter.</param>
-            <returns></returns>
-        </member>
-        <member name="M:Microsoft.AspNetCore.OData.Query.DefaultSkipTokenHandler.PopulatePropertyValuePairs(System.String,Microsoft.AspNetCore.OData.Query.ODataQueryContext)">
-            <summary>
-            Generates a dictionary with property name and property values specified in the skiptoken value.
-            </summary>
-            <param name="value">The skiptoken string value.</param>
-            <param name="context">The <see cref="T:Microsoft.AspNetCore.OData.Query.ODataQueryContext"/> which contains the <see cref="T:Microsoft.OData.Edm.IEdmModel"/> and some type information</param>
-            <returns>Dictionary with property name and property value in the skiptoken value.</returns>
-        </member>
-        <member name="M:Microsoft.AspNetCore.OData.Query.DefaultSkipTokenHandler.GetPropertiesForSkipToken(System.Object,Microsoft.OData.Edm.IEdmModel,System.Collections.Generic.IList{Microsoft.AspNetCore.OData.Query.OrderByNode})">
-            <summary>
-            Returns the list of properties that should be used for generating the skiptoken value. 
-            </summary>
-            <param name="lastMember">The last record that will be returned in the response.</param>
-            <param name="model">IEdmModel</param>
-            <param name="orderByNodes">OrderBy nodes in the original request.</param>
-            <returns>List of properties that should be used for generating the skiptoken value.</returns>
+            <param name="lastMember">The last object.</param>
+            <param name="model">The edm model.</param>
+            <param name="clause">The original orderby clause.</param>
+            <returns>The orderby clauses, since we don't need the 'ThenBy' for each clause, we didn't need to change it.</returns>
         </member>
         <member name="M:Microsoft.AspNetCore.OData.Query.DefaultSkipTokenHandler.GetTypeFromObject(System.Object,Microsoft.OData.Edm.IEdmModel)">
             <summary>
@@ -11136,6 +11526,11 @@
         <member name="P:Microsoft.AspNetCore.OData.Query.SelectExpandQueryOption.Validator">
             <summary>
             Gets or sets the $select and $expand query validator.
+            </summary>
+        </member>
+        <member name="P:Microsoft.AspNetCore.OData.Query.SelectExpandQueryOption.OrderBy">
+            <summary>
+            Gets or sets the <see cref="P:Microsoft.AspNetCore.OData.Query.SelectExpandQueryOption.OrderBy"/>.
             </summary>
         </member>
         <member name="P:Microsoft.AspNetCore.OData.Query.SelectExpandQueryOption.SelectExpandClause">
@@ -12012,6 +12407,197 @@
             <param name="orderByOption">The $orderby query.</param>
             <param name="validationSettings">The validation settings.</param>
         </member>
+        <member name="M:Microsoft.AspNetCore.OData.Query.Validator.OrderByQueryValidator.ValidateOrderBy(Microsoft.OData.UriParser.OrderByClause,Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext)">
+            <summary>
+            Validates a <see cref="T:Microsoft.OData.UriParser.OrderByClause" />.
+            </summary>
+            <param name="orderByClause">The <see cref="T:Microsoft.OData.UriParser.OrderByClause" />.</param>
+            <param name="validatorContext">The validation context.</param>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Query.Validator.OrderByQueryValidator.ValidateQueryNode(Microsoft.OData.UriParser.QueryNode,Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext)">
+            <summary>
+            Override this method if you want to visit each query node.
+            </summary>
+            <param name="node">The query node.</param>
+            <param name="validatorContext">The validation context.</param>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Query.Validator.OrderByQueryValidator.ValidateSingleValueNode(Microsoft.OData.UriParser.SingleValueNode,Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext,System.Boolean)">
+            <summary>
+            The recursive method that validate most of the SingleValueNode type.
+            </summary>
+            <param name="node">The single value node.</param>
+            <param name="validatorContext">The validator context.</param>
+            <param name="skipRangeVariable">The boolean value indicating skip the range variable validation. Typically, if it's 'Source' of a query node, we should skip it.</param>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Query.Validator.OrderByQueryValidator.ValidateSingleValueOpenPropertyNode(Microsoft.OData.UriParser.SingleValueOpenPropertyAccessNode,Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext)">
+            <summary>
+            Override this method to restrict the dynamic property inside the $orderby query.
+            </summary>
+            <param name="openPropertyNode">The in operator node to validate.</param>
+            <param name="validatorContext">The validation context.</param>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Query.Validator.OrderByQueryValidator.ValidateInNode(Microsoft.OData.UriParser.InNode,Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext)">
+            <summary>
+            Override this method to restrict the 'in' operator in the $orderby query.
+            </summary>
+            <param name="inNode">The in operator node to validate.</param>
+            <param name="validatorContext">The validation context.</param>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Query.Validator.OrderByQueryValidator.ValidateConstantNode(Microsoft.OData.UriParser.ConstantNode,Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext)">
+            <summary>
+            Override this method to restrict the 'constant' inside the $orderby query.
+            </summary>
+            <param name="constantNode">The constant node to validate.</param>
+            <param name="validatorContext">The validation context.</param>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Query.Validator.OrderByQueryValidator.ValidateConvertNode(Microsoft.OData.UriParser.ConvertNode,Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext)">
+            <summary>
+            Override this method to restrict the 'cast' inside the $orderby query.
+            </summary>
+            <param name="convertNode">The convert node to validate.</param>
+            <param name="validatorContext">The validation context.</param>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Query.Validator.OrderByQueryValidator.ValidateCountNode(Microsoft.OData.UriParser.CountNode,Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext)">
+            <summary>
+            Override this method to restrict the '$count' inside the $orderBy query.
+            </summary>
+            <param name="countNode">The count node to validate.</param>
+            <param name="validatorContext">The validation context.</param>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Query.Validator.OrderByQueryValidator.ValidateBinaryOperatorNode(Microsoft.OData.UriParser.BinaryOperatorNode,Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext)">
+            <summary>
+            Override this method to restrict the binary operators inside the $orderby query.
+            That includes all the logical operators except 'not' and all math operators.
+            </summary>
+            <param name="binaryOperatorNode">The binary operator node to validate.</param>
+            <param name="validatorContext">The validation context.</param>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Query.Validator.OrderByQueryValidator.ValidateRangeVariable(Microsoft.OData.UriParser.RangeVariable,Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext)">
+            <summary>
+            Override this method to validate the parameter used in the $orderby query.
+            </summary>
+            <param name="rangeVariable">The range variable node to validate.</param>
+            <param name="validatorContext">The validation context.</param>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Query.Validator.OrderByQueryValidator.ValidateSingleValuePropertyAccessNode(Microsoft.OData.UriParser.SingleValuePropertyAccessNode,Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext)">
+            <summary>
+            Override this method to validate property accessors.
+            </summary>
+            <param name="propertyAccessNode">The single value property access node.</param>
+            <param name="validatorContext">The validation context.</param>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Query.Validator.OrderByQueryValidator.ValidateSingleValueFunctionCallNode(Microsoft.OData.UriParser.SingleValueFunctionCallNode,Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext)">
+            <summary>
+            Override this method to validate Function calls, such as 'length', 'year', etc.
+            </summary>
+            <param name="node">The single value function call node to validate.</param>
+            <param name="validatorContext">The validation context.</param>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Query.Validator.OrderByQueryValidator.ValidateSingleComplexNode(Microsoft.OData.UriParser.SingleComplexNode,Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext)">
+            <summary>
+            Override this method to validate single complex property accessors.
+            </summary>
+            <param name="singleComplexNode">The single complex node to validate.</param>
+            <param name="validatorContext">The validation context.</param>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Query.Validator.OrderByQueryValidator.ValidateSingleResourceFunctionCallNode(Microsoft.OData.UriParser.SingleResourceFunctionCallNode,Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext)">
+            <summary>
+            Override this method to validate single resource function calls.
+            </summary>
+            <param name="node">The node to validate.</param>
+            <param name="validatorContext">The validation context.</param>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Query.Validator.OrderByQueryValidator.ValidateSingleResourceCastNode(Microsoft.OData.UriParser.SingleResourceCastNode,Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext)">
+            <summary>
+            Override this method if you want to validate casts on single resource.
+            </summary>
+            <param name="singleResourceCastNode">The single resource cast node.</param>
+            <param name="validatorContext">The validation context.</param>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Query.Validator.OrderByQueryValidator.ValidateUnaryOperatorNode(Microsoft.OData.UriParser.UnaryOperatorNode,Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext)">
+            <summary>
+            Override this method to validate the Not operator.
+            </summary>
+            <param name="unaryOperatorNode">The unary operator node.</param>
+            <param name="validatorContext">The validation context.</param>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Query.Validator.OrderByQueryValidator.ValidateNavigationPropertyNode(Microsoft.OData.UriParser.CollectionNavigationNode,Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext)">
+            <summary>
+            Override this method for the collection value navigation property node.
+            </summary>
+            <param name="collectionNavigation">The source node to validate.</param>
+            <param name="validatorContext">The validation context.</param>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Query.Validator.OrderByQueryValidator.ValidateNavigationPropertyNode(Microsoft.OData.UriParser.SingleNavigationNode,Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext)">
+            <summary>
+            Override this method for the single value navigation property node.
+            </summary>
+            <param name="singleNavigation">The source node to validate.</param>
+            <param name="validatorContext">The validation context.</param>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Query.Validator.OrderByQueryValidator.ValidateAllNode(Microsoft.OData.UriParser.AllNode,Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext)">
+            <summary>
+            Override this method to restrict the 'all' query inside the $orderby query.
+            </summary>
+            <param name="allNode">The all node to validate.</param>
+            <param name="validatorContext">The validation context.</param>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Query.Validator.OrderByQueryValidator.ValidateAnyNode(Microsoft.OData.UriParser.AnyNode,Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext)">
+            <summary>
+            Override this method to restrict the 'any' query inside the $orderby query.
+            </summary>
+            <param name="anyNode">The any node to validate.</param>
+            <param name="validatorContext">The validation context.</param>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Query.Validator.OrderByQueryValidator.ValidateCollectionNode(Microsoft.OData.UriParser.CollectionNode,Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext)">
+            <summary>
+            The recursive method that validate most of the query node type is of CollectionNode type.
+            </summary>
+            <param name="node">The collection value node.</param>
+            <param name="validatorContext">The validator context.</param>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Query.Validator.OrderByQueryValidator.ValidateCollectionResourceCastNode(Microsoft.OData.UriParser.CollectionResourceCastNode,Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext)">
+            <summary>
+            Override this method if you want to validate on resource collections cast node.
+            </summary>
+            <param name="collectionResourceCastNode">The collection resource cast node.</param>
+            <param name="validatorContext">The validation context.</param>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Query.Validator.OrderByQueryValidator.ValidateCollectionPropertyAccessNode(Microsoft.OData.UriParser.CollectionPropertyAccessNode,Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext)">
+            <summary>
+            Override this method to validate collection property accessors.
+            </summary>
+            <param name="propertyAccessNode">The collection property access node to validate.</param>
+            <param name="validatorContext">The validation context.</param>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Query.Validator.OrderByQueryValidator.ValidateCollectionComplexNode(Microsoft.OData.UriParser.CollectionComplexNode,Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext)">
+            <summary>
+            Override this method to validate collection complex property accessors.
+            </summary>
+            <param name="collectionComplexNode">The collection complex node to validate.</param>
+            <param name="validatorContext">The validation context.</param>
+        </member>
+        <member name="T:Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext">
+            <summary>
+            The metadata context for $orderby validator.
+            </summary>
+        </member>
+        <member name="P:Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext.OrderBy">
+            <summary>
+            The top level $orderby query option.
+            </summary>
+        </member>
+        <member name="P:Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext.OrderByNodeCount">
+            <summary>
+            Gets current orderby node count.
+            </summary>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext.IncrementNodeCount">
+            <summary>
+            Increment orderby node count.
+            </summary>
+            <exception cref="T:Microsoft.OData.ODataException">Throw OData exception.</exception>
+        </member>
         <member name="T:Microsoft.AspNetCore.OData.Query.Validator.QueryValidatorContext">
             <summary>
             The base for validator context.
@@ -12034,7 +12620,7 @@
         </member>
         <member name="P:Microsoft.AspNetCore.OData.Query.Validator.QueryValidatorContext.StructuredType">
             <summary>
-            The applied strutured type.
+            The applied structured type.
             </summary>
         </member>
         <member name="P:Microsoft.AspNetCore.OData.Query.Validator.QueryValidatorContext.CurrentDepth">
@@ -12046,6 +12632,18 @@
             <summary>
             Gets the Edm model.
             </summary>
+        </member>
+        <member name="T:Microsoft.AspNetCore.OData.Query.Validator.QueryValidatorHelpers">
+            <summary>
+            Helper methods for validation.
+            </summary>
+        </member>
+        <member name="M:Microsoft.AspNetCore.OData.Query.Validator.QueryValidatorHelpers.ValidateFunction(Microsoft.OData.UriParser.SingleValueFunctionCallNode,Microsoft.AspNetCore.OData.Query.Validator.ODataValidationSettings)">
+            <summary>
+            Validates a single value function call.
+            </summary>
+            <param name="functionCallNode">The function name.</param>
+            <param name="settings">The validation settings.</param>
         </member>
         <member name="T:Microsoft.AspNetCore.OData.Query.Validator.SelectExpandQueryValidator">
             <summary>
@@ -13701,6 +14299,11 @@
         <member name="M:Microsoft.AspNetCore.OData.Routing.ODataRouteOptions.#ctor">
             <summary>
             Initializes a new instance of the <see cref="T:Microsoft.AspNetCore.OData.Routing.ODataRouteOptions" /> class.
+            </summary>
+        </member>
+        <member name="P:Microsoft.AspNetCore.OData.Routing.ODataRouteOptions.Order">
+            <summary>
+            Gets or sets the route order in conventional routing.
             </summary>
         </member>
         <member name="P:Microsoft.AspNetCore.OData.Routing.ODataRouteOptions.EnableDollarCountRouting">

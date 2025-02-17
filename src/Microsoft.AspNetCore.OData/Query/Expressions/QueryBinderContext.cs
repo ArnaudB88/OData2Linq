@@ -8,6 +8,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
+using System.Linq;
 using System.Linq.Expressions;
 using Microsoft.AspNetCore.OData.Edm;
 using Microsoft.AspNetCore.OData.Query.Wrapper;
@@ -40,6 +41,13 @@ namespace Microsoft.AspNetCore.OData.Query.Expressions
 
         /// <summary>
         /// Initializes a new instance of the <see cref="QueryBinderContext" /> class.
+        /// For unit-test only
+        /// </summary>
+        internal QueryBinderContext()
+        { }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="QueryBinderContext" /> class.
         /// </summary>
         /// <param name="model">The Edm model.</param>
         /// <param name="querySettings">The query setting.</param>
@@ -54,8 +62,8 @@ namespace Microsoft.AspNetCore.OData.Query.Expressions
 
             ElementType = Model.GetEdmTypeReference(ElementClrType)?.Definition;
 
-            // Check if element type is null and not of AggregationWrapper type.
-            if (ElementType == null && ElementClrType != typeof(AggregationWrapper))
+            // Check if element type is null and not of AggregationWrapper type and not of NoGroupByAggregationWrapper type.
+            if (ElementType == null && ElementClrType != typeof(AggregationWrapper) && ElementClrType != typeof(NoGroupByAggregationWrapper))
             {
                 throw new ODataException(Error.Format(SRResources.ClrTypeNotInModel, ElementClrType.FullName));
             }
@@ -112,6 +120,7 @@ namespace Microsoft.AspNetCore.OData.Query.Expressions
             _lambdaParameters[DollarThis] = thisParameters;
 
             IsNested = true;
+            EnableSkipToken = context.EnableSkipToken;
         }
 
         /// <summary>
@@ -138,6 +147,22 @@ namespace Microsoft.AspNetCore.OData.Query.Expressions
         /// Gets the compute expressions.
         /// </summary>
         public IDictionary<string, ComputeExpression> ComputedProperties { get; } = new Dictionary<string, ComputeExpression>();
+
+        /// <summary>
+        /// Gets/sets the orderby clause.
+        /// Since we 'overlap' the orderby clause to list, then the 'ThenBy' does NOT matter again, please ignore it.
+        /// </summary>
+        internal List<OrderByClause> OrderByClauses { get; set; }
+
+        /// <summary>
+        /// Gets/sets the enable skip token, it's for nested orderby.
+        /// </summary>
+        internal bool EnableSkipToken { get; set; } = false;
+
+        /// <summary>
+        /// Flattened list of properties from base query, for case when binder is applied for aggregated query.
+        /// </summary>
+        internal IDictionary<string, Expression> FlattenedProperties { get; private set; } = new Dictionary<string, Expression>();
 
         /// <summary>
         /// Gets the <see cref="IEdmType"/> of the element type.
@@ -238,6 +263,16 @@ namespace Microsoft.AspNetCore.OData.Query.Expressions
             {
                 ComputedProperties[property.Alias] = property;
             }
+        }
+
+        internal void EnsureFlattenedProperties(ParameterExpression source, IQueryable query)
+        {
+            TransformationBinderBase binder = new TransformationBinderBase(this.QuerySettings, this.AssembliesResolver, this.ElementClrType, this.Model)
+            {
+                BaseQuery = query
+            };
+
+            this.FlattenedProperties = binder.GetFlattenedProperties(source);
         }
     }
 }

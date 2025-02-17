@@ -104,6 +104,11 @@ public class Microsoft.AspNetCore.OData.ODataOptions {
 	bool EnableNoDollarQueryOptions  { public get; public set; }
 	Microsoft.AspNetCore.OData.Query.DefaultQueryConfigurations QueryConfigurations  { public get; }
 	[
+	ObsoleteAttribute(),
+	]
+	Microsoft.OData.ModelBuilder.Config.DefaultQuerySettings QuerySettings  { public get; }
+
+	[
 	TupleElementNamesAttribute(),
 	]
 	System.Collections.Generic.IDictionary`2[[System.String],[System.ValueTuple`2[[Microsoft.OData.Edm.IEdmModel],[System.IServiceProvider]]]] RouteComponents  { public get; }
@@ -456,6 +461,7 @@ public enum Microsoft.AspNetCore.OData.Deltas.DeltaItemKind : int {
 public interface Microsoft.AspNetCore.OData.Deltas.IDelta : IDeltaSetItem {
 	void Clear ()
 	System.Collections.Generic.IEnumerable`1[[System.String]] GetChangedPropertyNames ()
+	System.Collections.Generic.IDictionary`2[[System.String],[System.Object]] GetDeltaNestedNavigationProperties ()
 	System.Collections.Generic.IEnumerable`1[[System.String]] GetUnchangedPropertyNames ()
 	bool TryGetPropertyType (string name, out System.Type& type)
 	bool TryGetPropertyValue (string name, out System.Object& value)
@@ -486,6 +492,7 @@ public abstract class Microsoft.AspNetCore.OData.Deltas.Delta : System.Dynamic.D
 
 	public abstract void Clear ()
 	public abstract System.Collections.Generic.IEnumerable`1[[System.String]] GetChangedPropertyNames ()
+	public abstract System.Collections.Generic.IDictionary`2[[System.String],[System.Object]] GetDeltaNestedNavigationProperties ()
 	public abstract System.Collections.Generic.IEnumerable`1[[System.String]] GetUnchangedPropertyNames ()
 	public virtual bool TryGetMember (System.Dynamic.GetMemberBinder binder, out System.Object& result)
 	public abstract bool TryGetPropertyType (string name, out System.Type& type)
@@ -502,8 +509,10 @@ public class Microsoft.AspNetCore.OData.Deltas.Delta`1 : Microsoft.AspNetCore.OD
 	public Delta`1 (System.Type structuralType)
 	public Delta`1 (System.Type structuralType, System.Collections.Generic.IEnumerable`1[[System.String]] updatableProperties)
 	public Delta`1 (System.Type structuralType, System.Collections.Generic.IEnumerable`1[[System.String]] updatableProperties, System.Reflection.PropertyInfo dynamicDictionaryPropertyInfo)
+	public Delta`1 (System.Type structuralType, System.Collections.Generic.IEnumerable`1[[System.String]] updatableProperties, System.Reflection.PropertyInfo dynamicDictionaryPropertyInfo, bool isComplexType)
 
 	System.Type ExpectedClrType  { public virtual get; }
+	bool IsComplexType  { public get; }
 	Microsoft.AspNetCore.OData.Deltas.DeltaItemKind Kind  { public virtual get; }
 	System.Type StructuredType  { public virtual get; }
 	System.Collections.Generic.IList`1[[System.String]] UpdatableProperties  { public get; }
@@ -512,9 +521,10 @@ public class Microsoft.AspNetCore.OData.Deltas.Delta`1 : Microsoft.AspNetCore.OD
 	public void CopyChangedValues (T original)
 	public void CopyUnchangedValues (T original)
 	public virtual System.Collections.Generic.IEnumerable`1[[System.String]] GetChangedPropertyNames ()
+	public virtual System.Collections.Generic.IDictionary`2[[System.String],[System.Object]] GetDeltaNestedNavigationProperties ()
 	public T GetInstance ()
 	public virtual System.Collections.Generic.IEnumerable`1[[System.String]] GetUnchangedPropertyNames ()
-	public void Patch (T original)
+	public T Patch (T original)
 	public void Put (T original)
 	public virtual bool TryGetPropertyType (string name, out System.Type& type)
 	public virtual bool TryGetPropertyValue (string name, out System.Object& value)
@@ -526,6 +536,7 @@ public class Microsoft.AspNetCore.OData.Deltas.DeltaDeletedResource`1 : Delta`1,
 	public DeltaDeletedResource`1 (System.Type structuralType)
 	public DeltaDeletedResource`1 (System.Type structuralType, System.Collections.Generic.IEnumerable`1[[System.String]] updatableProperties)
 	public DeltaDeletedResource`1 (System.Type structuralType, System.Collections.Generic.IEnumerable`1[[System.String]] updatableProperties, System.Reflection.PropertyInfo dynamicDictionaryPropertyInfo)
+	public DeltaDeletedResource`1 (System.Type structuralType, System.Collections.Generic.IEnumerable`1[[System.String]] updatableProperties, System.Reflection.PropertyInfo dynamicDictionaryPropertyInfo, bool isComplexType)
 
 	System.Uri Id  { public virtual get; public virtual set; }
 	Microsoft.AspNetCore.OData.Deltas.DeltaItemKind Kind  { public virtual get; }
@@ -1271,16 +1282,8 @@ public class Microsoft.AspNetCore.OData.Query.DefaultODataQueryRequestParser : I
 	public virtual System.Threading.Tasks.Task`1[[System.String]] ParseAsync (Microsoft.AspNetCore.Http.HttpRequest request)
 }
 
-public class Microsoft.AspNetCore.OData.Query.DefaultQueryConfigurations {
+public class Microsoft.AspNetCore.OData.Query.DefaultQueryConfigurations : Microsoft.OData.ModelBuilder.Config.DefaultQuerySettings {
 	public DefaultQueryConfigurations ()
-
-	bool EnableCount  { public get; public set; }
-	bool EnableExpand  { public get; public set; }
-	bool EnableFilter  { public get; public set; }
-	bool EnableOrderBy  { public get; public set; }
-	bool EnableSelect  { public get; public set; }
-	bool EnableSkipToken  { public get; public set; }
-	System.Nullable`1[[System.Int32]] MaxTop  { public get; public set; }
 }
 
 public class Microsoft.AspNetCore.OData.Query.DefaultSkipTokenHandler : Microsoft.AspNetCore.OData.Query.SkipTokenHandler {
@@ -1471,6 +1474,12 @@ public class Microsoft.AspNetCore.OData.Query.ODataRawQueryOptions {
 	string Top  { public get; }
 }
 
+public class Microsoft.AspNetCore.OData.Query.OrderByClauseNode : Microsoft.AspNetCore.OData.Query.OrderByNode {
+	public OrderByClauseNode (Microsoft.OData.UriParser.OrderByClause orderByClause)
+
+	Microsoft.OData.UriParser.OrderByClause OrderByClause  { public get; }
+}
+
 public class Microsoft.AspNetCore.OData.Query.OrderByCountNode : Microsoft.AspNetCore.OData.Query.OrderByNode {
 	public OrderByCountNode (Microsoft.OData.UriParser.OrderByClause orderByClause)
 
@@ -1478,7 +1487,10 @@ public class Microsoft.AspNetCore.OData.Query.OrderByCountNode : Microsoft.AspNe
 }
 
 public class Microsoft.AspNetCore.OData.Query.OrderByItNode : Microsoft.AspNetCore.OData.Query.OrderByNode {
+	public OrderByItNode (Microsoft.OData.UriParser.OrderByClause clause)
 	public OrderByItNode (Microsoft.OData.UriParser.OrderByDirection direction)
+
+	string Name  { public get; }
 }
 
 public class Microsoft.AspNetCore.OData.Query.OrderByOpenPropertyNode : Microsoft.AspNetCore.OData.Query.OrderByNode {
@@ -1651,7 +1663,7 @@ public class Microsoft.AspNetCore.OData.Results.ConflictODataResult : Microsoft.
 	public virtual System.Threading.Tasks.Task ExecuteResultAsync (Microsoft.AspNetCore.Mvc.ActionContext context)
 }
 
-public class Microsoft.AspNetCore.OData.Results.CreatedODataResult`1 : Microsoft.AspNetCore.Mvc.ActionResult, IActionResult {
+public class Microsoft.AspNetCore.OData.Results.CreatedODataResult`1 : Microsoft.AspNetCore.Mvc.ObjectResult, IActionResult, IStatusCodeActionResult {
 	public CreatedODataResult`1 (T entity)
 
 	T Entity  { public virtual get; }
@@ -1726,7 +1738,7 @@ public class Microsoft.AspNetCore.OData.Results.UnprocessableEntityODataResult :
 	public virtual System.Threading.Tasks.Task ExecuteResultAsync (Microsoft.AspNetCore.Mvc.ActionContext context)
 }
 
-public class Microsoft.AspNetCore.OData.Results.UpdatedODataResult`1 : Microsoft.AspNetCore.Mvc.ActionResult, IActionResult {
+public class Microsoft.AspNetCore.OData.Results.UpdatedODataResult`1 : Microsoft.AspNetCore.Mvc.ObjectResult, IActionResult, IStatusCodeActionResult {
 	public UpdatedODataResult`1 (T entity)
 
 	T Entity  { public virtual get; }
@@ -1868,6 +1880,7 @@ public class Microsoft.AspNetCore.OData.Routing.ODataRouteOptions {
 	bool EnablePropertyNameCaseInsensitive  { public get; public set; }
 	bool EnableQualifiedOperationCall  { public get; public set; }
 	bool EnableUnqualifiedOperationCall  { public get; public set; }
+	System.Nullable`1[[System.Int32]] Order  { public get; public set; }
 }
 
 public sealed class Microsoft.AspNetCore.OData.Routing.ODataRoutingMetadata : IODataRoutingMetadata {
@@ -2026,7 +2039,10 @@ public class Microsoft.AspNetCore.OData.Formatter.Deserialization.ODataResourceS
 	public virtual System.Threading.Tasks.Task`1[[System.Object]] ReadAsync (Microsoft.OData.ODataMessageReader messageReader, System.Type type, Microsoft.AspNetCore.OData.Formatter.Deserialization.ODataDeserializerContext readContext)
 
 	public virtual object ReadInline (object item, Microsoft.OData.Edm.IEdmTypeReference edmType, Microsoft.AspNetCore.OData.Formatter.Deserialization.ODataDeserializerContext readContext)
+	public virtual object ReadPrimitiveItem (Microsoft.AspNetCore.OData.Formatter.Wrapper.ODataPrimitiveWrapper primitiveWrapper, Microsoft.OData.Edm.IEdmTypeReference elementType, Microsoft.AspNetCore.OData.Formatter.Deserialization.ODataDeserializerContext readContext)
+	public virtual object ReadResourceItem (Microsoft.AspNetCore.OData.Formatter.Wrapper.ODataResourceWrapper resourceWrapper, Microsoft.OData.Edm.IEdmTypeReference elementType, Microsoft.AspNetCore.OData.Formatter.Deserialization.ODataDeserializerContext readContext)
 	public virtual System.Collections.IEnumerable ReadResourceSet (Microsoft.AspNetCore.OData.Formatter.Wrapper.ODataResourceSetWrapper resourceSet, Microsoft.OData.Edm.IEdmStructuredTypeReference elementType, Microsoft.AspNetCore.OData.Formatter.Deserialization.ODataDeserializerContext readContext)
+	public virtual object ReadResourceSetItem (Microsoft.AspNetCore.OData.Formatter.Wrapper.ODataResourceSetWrapper resourceSetWrapper, Microsoft.OData.Edm.IEdmTypeReference elementType, Microsoft.AspNetCore.OData.Formatter.Deserialization.ODataDeserializerContext readContext)
 }
 
 public abstract class Microsoft.AspNetCore.OData.Formatter.MediaType.MediaTypeMapping {
@@ -2100,6 +2116,10 @@ public interface Microsoft.AspNetCore.OData.Formatter.Serialization.IODataSerial
 	Microsoft.AspNetCore.OData.Formatter.Serialization.IODataSerializer GetODataPayloadSerializer (System.Type type, Microsoft.AspNetCore.Http.HttpRequest request)
 }
 
+public interface Microsoft.AspNetCore.OData.Formatter.Serialization.IUntypedResourceMapper {
+	System.Collections.Generic.IDictionary`2[[System.String],[System.Object]] Map (object resource, Microsoft.AspNetCore.OData.Formatter.Serialization.ODataSerializerContext context)
+}
+
 public abstract class Microsoft.AspNetCore.OData.Formatter.Serialization.ODataEdmTypeSerializer : Microsoft.AspNetCore.OData.Formatter.Serialization.ODataSerializer, IODataEdmTypeSerializer, IODataSerializer {
 	protected ODataEdmTypeSerializer (Microsoft.OData.ODataPayloadKind payloadKind)
 	protected ODataEdmTypeSerializer (Microsoft.OData.ODataPayloadKind payloadKind, Microsoft.AspNetCore.OData.Formatter.Serialization.IODataSerializerProvider serializerProvider)
@@ -2119,6 +2139,14 @@ public abstract class Microsoft.AspNetCore.OData.Formatter.Serialization.ODataSe
 	AsyncStateMachineAttribute(),
 	]
 	public virtual System.Threading.Tasks.Task WriteObjectAsync (object graph, System.Type type, Microsoft.OData.ODataMessageWriter messageWriter, Microsoft.AspNetCore.OData.Formatter.Serialization.ODataSerializerContext writeContext)
+}
+
+public class Microsoft.AspNetCore.OData.Formatter.Serialization.DefaultUntypedResourceMapper : IUntypedResourceMapper {
+	public static Microsoft.AspNetCore.OData.Formatter.Serialization.IUntypedResourceMapper Instance = Microsoft.AspNetCore.OData.Formatter.Serialization.DefaultUntypedResourceMapper
+
+	public DefaultUntypedResourceMapper ()
+
+	public virtual System.Collections.Generic.IDictionary`2[[System.String],[System.Object]] Map (object resource, Microsoft.AspNetCore.OData.Formatter.Serialization.ODataSerializerContext context)
 }
 
 public class Microsoft.AspNetCore.OData.Formatter.Serialization.ODataCollectionSerializer : Microsoft.AspNetCore.OData.Formatter.Serialization.ODataEdmTypeSerializer, IODataEdmTypeSerializer, IODataSerializer {
@@ -2250,6 +2278,9 @@ public class Microsoft.AspNetCore.OData.Formatter.Serialization.ODataResourceSer
 	public virtual Microsoft.AspNetCore.OData.Formatter.Serialization.SelectExpandNode CreateSelectExpandNode (Microsoft.AspNetCore.OData.Formatter.ResourceContext resourceContext)
 	public virtual Microsoft.OData.ODataStreamPropertyInfo CreateStreamProperty (Microsoft.OData.Edm.IEdmStructuralProperty structuralProperty, Microsoft.AspNetCore.OData.Formatter.ResourceContext resourceContext)
 	public virtual Microsoft.OData.ODataProperty CreateStructuralProperty (Microsoft.OData.Edm.IEdmStructuralProperty structuralProperty, Microsoft.AspNetCore.OData.Formatter.ResourceContext resourceContext)
+	public virtual Microsoft.OData.ODataNestedResourceInfo CreateUntypedNestedResourceInfo (Microsoft.OData.Edm.IEdmStructuralProperty structuralProperty, object propertyValue, Microsoft.OData.Edm.IEdmTypeReference valueType, Microsoft.OData.UriParser.PathSelectItem pathSelectItem, Microsoft.AspNetCore.OData.Formatter.ResourceContext resourceContext)
+	public virtual object CreateUntypedPropertyValue (Microsoft.OData.Edm.IEdmStructuralProperty structuralProperty, Microsoft.AspNetCore.OData.Formatter.ResourceContext resourceContext, out Microsoft.OData.Edm.IEdmTypeReference& actualType)
+	protected virtual bool ShouldWriteNavigation (Microsoft.OData.ODataNestedResourceInfo navigationLink, Microsoft.AspNetCore.OData.Formatter.ResourceContext resourceContext)
 	[
 	AsyncStateMachineAttribute(),
 	]
@@ -2270,7 +2301,13 @@ public class Microsoft.AspNetCore.OData.Formatter.Serialization.ODataResourceSet
 	public ODataResourceSetSerializer (Microsoft.AspNetCore.OData.Formatter.Serialization.IODataSerializerProvider serializerProvider)
 
 	public virtual Microsoft.OData.ODataOperation CreateODataOperation (Microsoft.OData.Edm.IEdmOperation operation, Microsoft.AspNetCore.OData.Formatter.ResourceSetContext resourceSetContext, Microsoft.AspNetCore.OData.Formatter.Serialization.ODataSerializerContext writeContext)
+	public virtual Microsoft.OData.ODataResourceSet CreateResourceSet (System.Collections.Generic.IAsyncEnumerable`1[[System.Object]] resourceSetInstance, Microsoft.OData.Edm.IEdmCollectionTypeReference resourceSetType, Microsoft.AspNetCore.OData.Formatter.Serialization.ODataSerializerContext writeContext)
 	public virtual Microsoft.OData.ODataResourceSet CreateResourceSet (System.Collections.IEnumerable resourceSetInstance, Microsoft.OData.Edm.IEdmCollectionTypeReference resourceSetType, Microsoft.AspNetCore.OData.Formatter.Serialization.ODataSerializerContext writeContext)
+	[
+	AsyncStateMachineAttribute(),
+	]
+	protected virtual System.Threading.Tasks.Task WriteEnumItemAsync (object enumValue, Microsoft.OData.Edm.IEdmTypeReference enumType, Microsoft.OData.Edm.IEdmTypeReference parentSetType, Microsoft.OData.ODataWriter writer, Microsoft.AspNetCore.OData.Formatter.Serialization.ODataSerializerContext writeContext)
+
 	[
 	AsyncStateMachineAttribute(),
 	]
@@ -2280,6 +2317,21 @@ public class Microsoft.AspNetCore.OData.Formatter.Serialization.ODataResourceSet
 	AsyncStateMachineAttribute(),
 	]
 	public virtual System.Threading.Tasks.Task WriteObjectInlineAsync (object graph, Microsoft.OData.Edm.IEdmTypeReference expectedType, Microsoft.OData.ODataWriter writer, Microsoft.AspNetCore.OData.Formatter.Serialization.ODataSerializerContext writeContext)
+
+	[
+	AsyncStateMachineAttribute(),
+	]
+	protected virtual System.Threading.Tasks.Task WritePrimitiveItemAsync (object primitiveValue, Microsoft.OData.Edm.IEdmTypeReference primitiveType, Microsoft.OData.Edm.IEdmTypeReference parentSetType, Microsoft.OData.ODataWriter writer, Microsoft.AspNetCore.OData.Formatter.Serialization.ODataSerializerContext writeContext)
+
+	[
+	AsyncStateMachineAttribute(),
+	]
+	protected virtual System.Threading.Tasks.Task WriteResourceItemAsync (object resourceValue, Microsoft.OData.Edm.IEdmTypeReference resourceType, Microsoft.OData.Edm.IEdmTypeReference parentSetType, Microsoft.OData.ODataWriter writer, Microsoft.AspNetCore.OData.Formatter.Serialization.ODataSerializerContext writeContext)
+
+	[
+	AsyncStateMachineAttribute(),
+	]
+	protected virtual System.Threading.Tasks.Task WriteResourceSetItemAsync (object itemSetValue, Microsoft.OData.Edm.IEdmTypeReference itemSetType, Microsoft.OData.Edm.IEdmTypeReference parentSetType, Microsoft.OData.ODataWriter writer, Microsoft.AspNetCore.OData.Formatter.Serialization.ODataSerializerContext writeContext)
 }
 
 public class Microsoft.AspNetCore.OData.Formatter.Serialization.ODataSerializerContext {
@@ -2375,6 +2427,9 @@ public interface Microsoft.AspNetCore.OData.Formatter.Value.IEdmStructuredObject
 	bool TryGetPropertyValue (string propertyName, out System.Object& value)
 }
 
+public interface Microsoft.AspNetCore.OData.Formatter.Value.IEdmUntypedObject : IEdmObject, IEdmStructuredObject {
+}
+
 public abstract class Microsoft.AspNetCore.OData.Formatter.Value.EdmDeltaLinkBase : IEdmChangedObject, IEdmDeltaLinkBase, IEdmObject {
 	protected EdmDeltaLinkBase (Microsoft.OData.Edm.IEdmEntityTypeReference typeReference)
 	protected EdmDeltaLinkBase (Microsoft.OData.Edm.IEdmEntityType entityType, bool isNullable)
@@ -2404,6 +2459,7 @@ public abstract class Microsoft.AspNetCore.OData.Formatter.Value.EdmStructuredOb
 
 	public virtual void Clear ()
 	public virtual System.Collections.Generic.IEnumerable`1[[System.String]] GetChangedPropertyNames ()
+	public virtual System.Collections.Generic.IDictionary`2[[System.String],[System.Object]] GetDeltaNestedNavigationProperties ()
 	public virtual Microsoft.OData.Edm.IEdmTypeReference GetEdmType ()
 	public virtual System.Collections.Generic.IEnumerable`1[[System.String]] GetUnchangedPropertyNames ()
 	public System.Collections.Generic.Dictionary`2[[System.String],[System.Object]] TryGetDynamicProperties ()
@@ -2563,6 +2619,25 @@ public class Microsoft.AspNetCore.OData.Formatter.Value.NullEdmComplexObject : I
 	public virtual bool TryGetPropertyValue (string propertyName, out System.Object& value)
 }
 
+[
+NonValidatingParameterBindingAttribute(),
+]
+public sealed class Microsoft.AspNetCore.OData.Formatter.Value.EdmUntypedCollection : System.Collections.Generic.List`1[[System.Object]], ICollection, IEnumerable, IList, IEdmObject, ICollection`1, IEnumerable`1, IList`1, IReadOnlyCollection`1, IReadOnlyList`1 {
+	public EdmUntypedCollection ()
+
+	public virtual Microsoft.OData.Edm.IEdmTypeReference GetEdmType ()
+}
+
+[
+NonValidatingParameterBindingAttribute(),
+]
+public sealed class Microsoft.AspNetCore.OData.Formatter.Value.EdmUntypedObject : System.Collections.Generic.Dictionary`2[[System.String],[System.Object]], ICollection, IDictionary, IEnumerable, IDeserializationCallback, ISerializable, IEdmObject, IEdmStructuredObject, IEdmUntypedObject, IDictionary`2, IReadOnlyDictionary`2, ICollection`1, IEnumerable`1, IReadOnlyCollection`1 {
+	public EdmUntypedObject ()
+
+	public virtual Microsoft.OData.Edm.IEdmTypeReference GetEdmType ()
+	public virtual bool TryGetPropertyValue (string propertyName, out System.Object& value)
+}
+
 public abstract class Microsoft.AspNetCore.OData.Formatter.Wrapper.ODataDeltaLinkBaseWrapper : Microsoft.AspNetCore.OData.Formatter.Wrapper.ODataItemWrapper {
 	protected ODataDeltaLinkBaseWrapper ()
 }
@@ -2597,6 +2672,12 @@ public class Microsoft.AspNetCore.OData.Formatter.Wrapper.ODataEntityReferenceLi
 	Microsoft.OData.ODataEntityReferenceLink EntityReferenceLink  { public get; }
 }
 
+public class Microsoft.AspNetCore.OData.Formatter.Wrapper.ODataPrimitiveWrapper : Microsoft.AspNetCore.OData.Formatter.Wrapper.ODataItemWrapper {
+	public ODataPrimitiveWrapper (Microsoft.OData.ODataPrimitiveValue value)
+
+	Microsoft.OData.ODataPrimitiveValue Value  { public get; }
+}
+
 public sealed class Microsoft.AspNetCore.OData.Formatter.Wrapper.ODataDeltaDeletedLinkWrapper : Microsoft.AspNetCore.OData.Formatter.Wrapper.ODataDeltaLinkBaseWrapper {
 	public ODataDeltaDeletedLinkWrapper (Microsoft.OData.ODataDeltaDeletedLink deltaDeletedLink)
 
@@ -2626,6 +2707,7 @@ public sealed class Microsoft.AspNetCore.OData.Formatter.Wrapper.ODataNestedReso
 public sealed class Microsoft.AspNetCore.OData.Formatter.Wrapper.ODataResourceSetWrapper : Microsoft.AspNetCore.OData.Formatter.Wrapper.ODataResourceSetBaseWrapper {
 	public ODataResourceSetWrapper (Microsoft.OData.ODataResourceSet resourceSet)
 
+	System.Collections.Generic.IList`1[[Microsoft.AspNetCore.OData.Formatter.Wrapper.ODataItemWrapper]] Items  { public get; }
 	System.Collections.Generic.IList`1[[Microsoft.AspNetCore.OData.Formatter.Wrapper.ODataResourceWrapper]] Resources  { public get; }
 	Microsoft.OData.ODataResourceSet ResourceSet  { public get; }
 }
@@ -2689,8 +2771,6 @@ public interface Microsoft.AspNetCore.OData.Query.Expressions.ISelectExpandBinde
 }
 
 public abstract class Microsoft.AspNetCore.OData.Query.Expressions.ExpressionBinderBase {
-	protected ExpressionBinderBase (System.IServiceProvider requestContainer)
-
 	System.Linq.Expressions.ParameterExpression Parameter  { protected abstract get; }
 
 	public abstract System.Linq.Expressions.Expression Bind (Microsoft.OData.UriParser.QueryNode node)
@@ -2849,6 +2929,7 @@ public class Microsoft.AspNetCore.OData.Query.Expressions.SelectExpandBinder : M
 	Microsoft.AspNetCore.OData.Query.Expressions.IOrderByBinder OrderByBinder  { public get; }
 
 	public virtual void BindComputedProperty (System.Linq.Expressions.Expression source, Microsoft.AspNetCore.OData.Query.Expressions.QueryBinderContext context, string computedProperty, System.Collections.Generic.IList`1[[Microsoft.AspNetCore.OData.Query.Container.NamedPropertyExpression]] includedProperties)
+	protected virtual void BindOrderByProperties (Microsoft.AspNetCore.OData.Query.Expressions.QueryBinderContext context, System.Linq.Expressions.Expression source, Microsoft.OData.Edm.IEdmStructuredType structuredType, System.Collections.Generic.IList`1[[Microsoft.AspNetCore.OData.Query.Container.NamedPropertyExpression]] includedProperties, bool isSelectedAll)
 	public virtual System.Linq.Expressions.Expression BindSelectExpand (Microsoft.OData.UriParser.SelectExpandClause selectExpandClause, Microsoft.AspNetCore.OData.Query.Expressions.QueryBinderContext context)
 	public virtual void BuildDynamicProperty (Microsoft.AspNetCore.OData.Query.Expressions.QueryBinderContext context, System.Linq.Expressions.Expression source, Microsoft.OData.Edm.IEdmStructuredType structuredType, System.Collections.Generic.IList`1[[Microsoft.AspNetCore.OData.Query.Container.NamedPropertyExpression]] includedProperties)
 	public virtual System.Linq.Expressions.Expression CreatePropertyNameExpression (Microsoft.AspNetCore.OData.Query.Expressions.QueryBinderContext context, Microsoft.OData.Edm.IEdmStructuredType elementType, Microsoft.OData.Edm.IEdmProperty edmProperty, System.Linq.Expressions.Expression source)
@@ -2984,6 +3065,39 @@ public class Microsoft.AspNetCore.OData.Query.Validator.OrderByQueryValidator : 
 	public OrderByQueryValidator ()
 
 	public virtual void Validate (Microsoft.AspNetCore.OData.Query.OrderByQueryOption orderByOption, Microsoft.AspNetCore.OData.Query.Validator.ODataValidationSettings validationSettings)
+	protected virtual void ValidateAllNode (Microsoft.OData.UriParser.AllNode allNode, Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext validatorContext)
+	protected virtual void ValidateAnyNode (Microsoft.OData.UriParser.AnyNode anyNode, Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext validatorContext)
+	protected virtual void ValidateBinaryOperatorNode (Microsoft.OData.UriParser.BinaryOperatorNode binaryOperatorNode, Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext validatorContext)
+	protected virtual void ValidateCollectionComplexNode (Microsoft.OData.UriParser.CollectionComplexNode collectionComplexNode, Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext validatorContext)
+	protected virtual void ValidateCollectionNode (Microsoft.OData.UriParser.CollectionNode node, Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext validatorContext)
+	protected virtual void ValidateCollectionPropertyAccessNode (Microsoft.OData.UriParser.CollectionPropertyAccessNode propertyAccessNode, Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext validatorContext)
+	protected virtual void ValidateCollectionResourceCastNode (Microsoft.OData.UriParser.CollectionResourceCastNode collectionResourceCastNode, Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext validatorContext)
+	protected virtual void ValidateConstantNode (Microsoft.OData.UriParser.ConstantNode constantNode, Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext validatorContext)
+	protected virtual void ValidateConvertNode (Microsoft.OData.UriParser.ConvertNode convertNode, Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext validatorContext)
+	protected virtual void ValidateCountNode (Microsoft.OData.UriParser.CountNode countNode, Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext validatorContext)
+	protected virtual void ValidateInNode (Microsoft.OData.UriParser.InNode inNode, Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext validatorContext)
+	protected virtual void ValidateNavigationPropertyNode (Microsoft.OData.UriParser.CollectionNavigationNode collectionNavigation, Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext validatorContext)
+	protected virtual void ValidateNavigationPropertyNode (Microsoft.OData.UriParser.SingleNavigationNode singleNavigation, Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext validatorContext)
+	protected virtual void ValidateOrderBy (Microsoft.OData.UriParser.OrderByClause orderByClause, Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext validatorContext)
+	protected virtual void ValidateQueryNode (Microsoft.OData.UriParser.QueryNode node, Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext validatorContext)
+	protected virtual void ValidateRangeVariable (Microsoft.OData.UriParser.RangeVariable rangeVariable, Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext validatorContext)
+	protected virtual void ValidateSingleComplexNode (Microsoft.OData.UriParser.SingleComplexNode singleComplexNode, Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext validatorContext)
+	protected virtual void ValidateSingleResourceCastNode (Microsoft.OData.UriParser.SingleResourceCastNode singleResourceCastNode, Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext validatorContext)
+	protected virtual void ValidateSingleResourceFunctionCallNode (Microsoft.OData.UriParser.SingleResourceFunctionCallNode node, Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext validatorContext)
+	protected virtual void ValidateSingleValueFunctionCallNode (Microsoft.OData.UriParser.SingleValueFunctionCallNode node, Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext validatorContext)
+	protected virtual void ValidateSingleValueNode (Microsoft.OData.UriParser.SingleValueNode node, Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext validatorContext, bool skipRangeVariable)
+	protected virtual void ValidateSingleValueOpenPropertyNode (Microsoft.OData.UriParser.SingleValueOpenPropertyAccessNode openPropertyNode, Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext validatorContext)
+	protected virtual void ValidateSingleValuePropertyAccessNode (Microsoft.OData.UriParser.SingleValuePropertyAccessNode propertyAccessNode, Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext validatorContext)
+	protected virtual void ValidateUnaryOperatorNode (Microsoft.OData.UriParser.UnaryOperatorNode unaryOperatorNode, Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext validatorContext)
+}
+
+public class Microsoft.AspNetCore.OData.Query.Validator.OrderByValidatorContext : Microsoft.AspNetCore.OData.Query.Validator.QueryValidatorContext {
+	public OrderByValidatorContext ()
+
+	Microsoft.AspNetCore.OData.Query.OrderByQueryOption OrderBy  { public get; public set; }
+	int OrderByNodeCount  { public get; }
+
+	public void IncrementNodeCount ()
 }
 
 public class Microsoft.AspNetCore.OData.Query.Validator.SelectExpandQueryValidator : ISelectExpandQueryValidator {

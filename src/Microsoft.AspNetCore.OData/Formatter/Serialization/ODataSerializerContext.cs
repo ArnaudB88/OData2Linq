@@ -14,6 +14,10 @@ using Microsoft.AspNetCore.OData.Formatter.Value;
 using Microsoft.OData.Edm;
 using Microsoft.OData.UriParser;
 using Microsoft.AspNetCore.OData.Edm;
+using Microsoft.AspNetCore.OData.Extensions;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.OData.Deltas;
+using Microsoft.AspNetCore.OData.Common;
 
 namespace Microsoft.AspNetCore.OData.Formatter.Serialization
 {
@@ -26,6 +30,8 @@ namespace Microsoft.AspNetCore.OData.Formatter.Serialization
         private ODataQueryContext _queryContext;
         private SelectExpandClause _selectExpandClause;
         private bool _isSelectExpandClauseSet;
+        internal Type Type { get; set; }
+        private bool? _isDeltaOfT;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ODataSerializerContext"/> class.
@@ -78,6 +84,7 @@ namespace Microsoft.AspNetCore.OData.Formatter.Serialization
             Items = context.Items;
             ExpandReference = context.ExpandReference;
             TimeZone = context.TimeZone;
+            Type = context.Type;
 
             QueryContext = queryContext;
 
@@ -191,6 +198,21 @@ namespace Microsoft.AspNetCore.OData.Formatter.Serialization
         /// </summary>
         public ISet<string> ComputedProperties { get; } = new HashSet<string>();
 
+        private IUntypedResourceMapper _valueMapper;
+        internal IUntypedResourceMapper UntypedMapper
+        {
+            get
+            {
+                if (_valueMapper == null)
+                {
+                    _valueMapper = Request?.GetRouteServices()?.GetService<IUntypedResourceMapper>();
+                    _valueMapper = _valueMapper ?? DefaultUntypedResourceMapper.Instance;
+                }
+
+                return _valueMapper;
+            }
+        }
+
         /// <summary>
         /// ODataQueryContext object, retrieved from query options for top-level context and passed down to nested serializer context as is.
         /// </summary>
@@ -272,6 +294,20 @@ namespace Microsoft.AspNetCore.OData.Formatter.Serialization
             }
         }
 
+        internal bool IsDeltaOfT
+        {
+            get
+            {
+                if (_isDeltaOfT == null)
+                {
+                    _isDeltaOfT = Type != null && Type.IsGenericType && (Type.GetGenericTypeDefinition() == typeof(Delta<>) ||
+                        Type.GetGenericTypeDefinition() == typeof(DeltaSet<>) || Type.GetGenericTypeDefinition() == typeof(DeltaDeletedResource<>));
+                }
+
+                return _isDeltaOfT.Value;
+            }
+        }
+
         /// <summary>
         /// Gets or sets the <see cref="ExpandedNavigationSelectItem"/>.
         /// </summary>
@@ -294,15 +330,15 @@ namespace Microsoft.AspNetCore.OData.Formatter.Serialization
             }
         }
 
-        internal IEdmTypeReference GetEdmType(object instance, Type type)
+        internal IEdmTypeReference GetEdmType(object instance, Type type, bool isUntyped = false)
         {
-            IEdmTypeReference edmType;
+            IEdmTypeReference edmType = null;
 
             IEdmObject edmObject = instance as IEdmObject;
             if (edmObject != null)
             {
                 edmType = edmObject.GetEdmType();
-                if (edmType == null)
+                if (edmType == null && !isUntyped)
                 {
                     throw Error.InvalidOperation(SRResources.EdmTypeCannotBeNull, edmObject.GetType().FullName,
                         typeof(IEdmObject).Name);
@@ -310,33 +346,54 @@ namespace Microsoft.AspNetCore.OData.Formatter.Serialization
             }
             else
             {
-                if (Model == null)
+                if (typeof(IDeltaSet).IsAssignableFrom(type))
+                {
+                    return Model.GetEdmTypeReference(type);
+                }
+
+                if (Model == null && !isUntyped)
                 {
                     throw Error.InvalidOperation(SRResources.RequestMustHaveModel);
                 }
 
-                edmType = Model.GetEdmTypeReference(type);
-
-                if (edmType == null)
+                if (Model != null)
                 {
-                    if (instance != null)
-                    {
-                        edmType = Model.GetEdmTypeReference(instance.GetType());
-                    }
+                    edmType = Model.GetEdmTypeReference(type);
 
                     if (edmType == null)
                     {
-                        throw Error.InvalidOperation(SRResources.ClrTypeNotInModel, type);
+                        if (instance != null)
+                        {
+                            if (instance is ITypedDelta delta)
+                            {
+                                edmType = Model.GetEdmTypeReference(delta.ExpectedClrType);
+                            }
+                            else
+                            {
+                                edmType = Model.GetEdmTypeReference(instance.GetType());
+                            }
+                        }
+
+                        if (edmType == null && !isUntyped)
+                        {
+                            throw Error.InvalidOperation(SRResources.ClrTypeNotInModel, type);
+                        }
                     }
-                }
-                else if (instance != null)
-                {
-                    IEdmTypeReference actualType = Model.GetEdmTypeReference(instance.GetType());
-                    if (actualType != null && actualType != edmType)
+                    else if (instance != null)
                     {
-                        edmType = actualType;
+                        IEdmTypeReference actualType = Model.GetEdmTypeReference(instance.GetType());
+                        if (actualType != null && actualType != edmType)
+                        {
+                            edmType = actualType;
+                        }
                     }
                 }
+            }
+
+            if (edmType == null && isUntyped)
+            {
+                // we can't find the Edm type and it's in untyped. Let's return it as Untyped resource type (or collection)
+                return TypeHelper.GetUntypedEdmType(type ?? instance.GetType());
             }
 
             return edmType;

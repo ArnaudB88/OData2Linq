@@ -5,7 +5,7 @@
 // </copyright>
 //------------------------------------------------------------------------------
 
-using System;
+using Microsoft.OData;
 using Microsoft.OData.Edm;
 using Microsoft.OData.UriParser;
 
@@ -21,9 +21,13 @@ namespace Microsoft.AspNetCore.OData.Query
         /// </summary>
         /// <param name="orderByClause">The orderby clause representing property access.</param>
         public OrderByCountNode(OrderByClause orderByClause)
+            : base(orderByClause)
         {
-            OrderByClause = orderByClause ?? throw Error.ArgumentNull(nameof(orderByClause));
-            Direction = orderByClause.Direction;
+            OrderByClause = orderByClause;
+            if (!(orderByClause.Expression is CountNode))
+            {
+                throw new ODataException(string.Format(SRResources.OrderByClauseInvalid, orderByClause.Expression.Kind, QueryNodeKind.Count));
+            }
         }
 
         /// <summary>

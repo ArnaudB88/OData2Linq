@@ -29,10 +29,10 @@ namespace Microsoft.AspNetCore.OData.E2E.Tests.EntitySetAggregation
             public override void ConfigureServices(IServiceCollection services)
             {
                 // Use the sql server got the access error.
-                services.AddDbContext<EntitySetAggregationContext>(opt => opt.UseSqlServer(@"Server=(localdb)\mssqllocaldb;Database=EntitySetAggregationContext;Trusted_Connection=True;"));
-                //services.AddDbContext<EntitySetAggregationContext>(opt => opt.UseInMemoryDatabase("EntitySetAggregationTest"));
+               // services.AddDbContext<EntitySetAggregationContext>(opt => opt.UseSqlServer(@"Server=(localdb)\mssqllocaldb;Database=EntitySetAggregationContext;Trusted_Connection=True;"));
+                services.AddDbContext<EntitySetAggregationContext>(opt => opt.UseInMemoryDatabase("EntitySetAggregationTest"));
 
-                services.ConfigureControllers(typeof(CustomersController));
+                services.ConfigureControllers(typeof(CustomersController), typeof(OrdersController));
 
                 IEdmModel edmModel = EntitySetAggregationEdmModel.GetEdmModel();
                 services.AddControllers().AddOData(opt => opt.Count().Filter().Expand().Select().OrderBy().SetMaxTop(null)
@@ -102,6 +102,113 @@ namespace Microsoft.AspNetCore.OData.E2E.Tests.EntitySetAggregation
             // Sum of the 6 Orders IDs
             Assert.Equal(1 + 2 + 3 + 4 + 5 + 6, totalId); 
         }
+
+#if NET6_0_OR_GREATER
+
+        [Fact]
+        public async Task GroupByWithAggregationAndOrderByWorks()
+        {
+            // Arrange
+            string queryUrl = AggregationTestBaseUrl + "?$apply=groupby((Name),aggregate(Orders(Price with sum as TotalPrice)))&$orderby=Name desc";
+            string expectedResult = "{\"value\":[{\"Name\":\"Customer1\",\"Orders\":[{\"TotalPrice\":200}]},{\"Name\":\"Customer0\",\"Orders\":[{\"TotalPrice\":400}]}]}";
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, queryUrl);
+            request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/json;odata.metadata=none"));
+
+            // Act
+            HttpResponseMessage response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var stringObject = await response.Content.ReadAsStringAsync();
+            
+            Assert.Equal(expectedResult, stringObject.ToString());
+
+            var result = await response.Content.ReadAsObject<JObject>();    
+            var value = result["value"];
+            var orders = value.First["Orders"];
+            var totalPrice = orders.First["TotalPrice"].ToObject<int>();
+
+            Assert.Equal(200, totalPrice);
+        }
+
+        [Fact]
+        public async Task GroupByWithAggregationAndOrderByDynamicPropsWorks()
+        {
+            // Arrange
+            string queryUrl = "aggregation/Orders?$apply=groupby((Name),aggregate(Price with sum as TotalPrice))&$orderby=TotalPrice desc";
+            string expectedResult = "{\"value\":[{\"Name\":\"Order61\",\"TotalPrice\":225},{\"Name\":\"Order41\",\"TotalPrice\":150},{\"Name\":\"Order21\",\"TotalPrice\":75},{\"Name\":\"Order6\",\"TotalPrice\":75},{\"Name\":\"Order4\",\"TotalPrice\":50},{\"Name\":\"Order2\",\"TotalPrice\":25}]}";
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, queryUrl);
+            request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/json;odata.metadata=none"));
+
+            // Act
+            HttpResponseMessage response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var stringObject = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal(expectedResult, stringObject.ToString());
+        }
+
+        [Fact]
+        public async Task GroupByMoreThanOnePropertyWithDollarTopWorks()
+        {
+            // Arrange
+            string queryUrl = "aggregation/Orders?$apply=groupby((Id, Name),aggregate(Price with sum as TotalPrice))&$top=1";
+            string expectedResult = "{\"value\":[{\"Name\":\"Order2\",\"Id\":1,\"TotalPrice\":25}]}";
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, queryUrl);
+            request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/json;odata.metadata=none"));
+
+            // Act
+            HttpResponseMessage response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var stringObject = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal(expectedResult, stringObject.ToString());
+        }
+
+        [Fact]
+        public async Task AggregationWithFilterWorks()
+        {
+            // Arrange
+            string queryUrl = AggregationTestBaseUrl + "?$apply=filter((contains(Name,'Customer1')))/aggregate(Orders(Price with sum as TotalPrice))";
+            string expectedResult = "{\"value\":[{\"Orders\":[{\"TotalPrice\":200}]}]}";
+            
+                  HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, queryUrl);
+            request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/json;odata.metadata=none"));
+
+            // Act
+            HttpResponseMessage response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var stringObject = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal(expectedResult, stringObject.ToString());
+        }
+
+        [Fact]
+        public async Task GroupByWithAggregationAndFilterByWorks()
+        {
+            // Arrange
+            string queryUrl = AggregationTestBaseUrl + "?$apply=groupby((Name),aggregate(Orders(Price with sum as TotalPrice)))&$filter=Name eq 'Customer1'";
+            string expectedResult = "{\"value\":[{\"Name\":\"Customer1\",\"Orders\":[{\"TotalPrice\":200}]}]}";
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, queryUrl);
+            request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/json;odata.metadata=none"));
+
+            // Act
+            HttpResponseMessage response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var stringObject = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal(expectedResult, stringObject.ToString());
+        }
+
+#endif
 
         [Fact(Skip = "See the comments above")]
         public async Task AggregationOnEntitySetWorksWithPropertyAggregation()
