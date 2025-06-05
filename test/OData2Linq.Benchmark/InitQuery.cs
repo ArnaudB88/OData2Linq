@@ -1,4 +1,4 @@
-﻿using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.OData.Query;
 using Microsoft.OData;
 using Microsoft.OData.Edm;
@@ -12,9 +12,9 @@ namespace OData2Linq.Benchmark
 {
     public class InitQuery
     {
-        private static readonly ODataSimplifiedOptions SimplifiedOptions = new ODataSimplifiedOptions();
+        private static readonly ODataMessageReaderSettings ODataMessageReaderSettings = new ODataMessageReaderSettings();
 
-        private static ODataUriResolver DefaultResolver = new StringAsEnumResolver { EnableCaseInsensitive = true };
+        private static readonly ODataMessageWriterSettings ODataMessageWriterSettings = new ODataMessageWriterSettings();
 
         private static readonly IEdmModel defaultEdmModel;
 
@@ -44,8 +44,9 @@ namespace OData2Linq.Benchmark
             container.AddService(typeof(IEdmModel), edmModel);
             container.AddService(typeof(ODataQuerySettings), settings.QuerySettings);
             container.AddService(typeof(ODataUriParserSettings), settings.ParserSettings);
-            container.AddService(typeof(ODataUriResolver), settings.Resolver ?? DefaultResolver);
-            container.AddService(typeof(ODataSimplifiedOptions), SimplifiedOptions);
+            container.AddService(typeof(ODataUriResolver), settings.Resolver);
+            container.AddService(typeof(ODataMessageReaderSettings), ODataMessageReaderSettings);
+            container.AddService(typeof(ODataMessageWriterSettings), ODataMessageWriterSettings);
             container.AddService(typeof(ODataSettings), settings);
             container.AddService(typeof(DefaultQueryConfigurations), settings.DefaultQueryConfigurations);
 
@@ -68,8 +69,9 @@ namespace OData2Linq.Benchmark
             container.AddService(typeof(IEdmModel), edmModel);
             container.AddService(typeof(ODataQuerySettings), settings.QuerySettings);
             container.AddService(typeof(ODataUriParserSettings), settings.ParserSettings);
-            container.AddService(typeof(ODataUriResolver), settings.Resolver ?? DefaultResolver);
-            container.AddService(typeof(ODataSimplifiedOptions), SimplifiedOptions);
+            container.AddService(typeof(ODataUriResolver), settings.Resolver);
+            container.AddService(typeof(ODataMessageReaderSettings), ODataMessageReaderSettings);
+            container.AddService(typeof(ODataMessageWriterSettings), ODataMessageWriterSettings);
             container.AddService(typeof(ODataSettings), settings);
             container.AddService(typeof(DefaultQueryConfigurations), settings.DefaultQueryConfigurations);
 

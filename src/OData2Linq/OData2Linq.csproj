@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>FriendAssemblies.snk</AssemblyOriginatorKeyFile>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>1.1.0</Version>
+    <Version>1.2.0</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/ArnaudB88/OData2Linq</RepositoryUrl>
@@ -17,23 +17,19 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.OData.ModelBuilder" Version="1.0.9" />
-    <PackageReference Include="Microsoft.OData.Core" Version="7.20.0" />
+    <PackageReference Include="Microsoft.AspNetCore.OData" Version="9.3.1" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.5" />
+    <PackageReference Include="IgnoresAccessChecksToGenerator" Version="0.8.0" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <IgnoresAccessChecksTo Include="Microsoft.AspNetCore.OData" />
   </ItemGroup>
 
  <ItemGroup>
-   <ProjectReference Include="..\Microsoft.AspNetCore.OData\Microsoft.AspNetCore.OData.csproj">
-     <PrivateAssets>All</PrivateAssets>
-   </ProjectReference>
- </ItemGroup>
-
- <ItemGroup>
-    <None Include="$(OutputPath)Microsoft.AspNetCore.OData.dll" Pack="true" PackagePath="lib\$(TargetFramework)"></None>
-    <None Include="..\..\.github\README.md" Link="README.md">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
+    <None Include="..\..\.github\README.md" Link="README.md" Pack="True" PackagePath="\" />
     <None Include="..\..\.github\workflows\odata2linq-cd.yml" Link="odata2linq-cd.yml" />
     <None Include="..\..\.github\workflows\odata2linq-ci.yml" Link="odata2linq-ci.yml" />
  </ItemGroup>
+
 </Project>

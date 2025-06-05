@@ -1,4 +1,4 @@
-﻿namespace OData2Linq
+namespace OData2Linq
 {
     using Microsoft.AspNetCore.OData.Query;
     using Microsoft.AspNetCore.OData.Query.Validator;
@@ -8,8 +8,8 @@
     using Microsoft.OData.Edm;
     using Microsoft.OData.ModelBuilder;
     using Microsoft.OData.UriParser;
-    using OData2Linq.Helpers;
-    using OData2Linq.Settings;
+    using Helpers;
+    using Settings;
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
@@ -21,7 +21,9 @@
         /// <summary>
         /// The simplified options.
         /// </summary>
-        private static readonly ODataSimplifiedOptions SimplifiedOptions = new ODataSimplifiedOptions();
+        private static readonly ODataMessageReaderSettings ODataMessageReaderSettings = new ODataMessageReaderSettings();
+
+        private static readonly ODataMessageWriterSettings ODataMessageWriterSettings = new ODataMessageWriterSettings();
 
         private static readonly ConcurrentDictionary<Type, IEdmModel> Models = new ConcurrentDictionary<Type, IEdmModel>();
 
@@ -64,8 +66,7 @@
                 settings.QuerySettings,
                 settings.DefaultQueryConfigurations,
                 settings.ParserSettings.MaximumExpansionCount,
-                settings.ParserSettings.MaximumExpansionDepth,
-                settings.AllowRecursiveLoopOfComplexTypes);
+                settings.ParserSettings.MaximumExpansionDepth);
 
             var baseContainer = Containers.GetOrAdd(settingsHash, i =>
             {
@@ -73,7 +74,8 @@
 
                 c.AddService(typeof(ODataQuerySettings), settings.QuerySettings);
                 c.AddService(typeof(DefaultQueryConfigurations), settings.DefaultQueryConfigurations);
-                c.AddService(typeof(ODataSimplifiedOptions), SimplifiedOptions);
+                c.AddService(typeof(ODataMessageReaderSettings), ODataMessageReaderSettings);
+                c.AddService(typeof(ODataMessageWriterSettings), ODataMessageWriterSettings);
                 c.AddService(typeof(ODataUriParserSettings), settings.ParserSettings);
 
                 return c;
@@ -81,7 +83,7 @@
 
             var container = new ServiceContainer(baseContainer);
             container.AddService(typeof(IEdmModel), edmModel);
-            container.AddService(typeof(ODataUriResolver), settings.Resolver ?? ODataSettings.DefaultResolver);
+            container.AddService(typeof(ODataUriResolver), settings.Resolver);
             container.AddService(typeof(ODataSettings), settings);
 
             var dataQuery = new ODataQuery<T>(query, container);
@@ -328,6 +330,7 @@
             {
                 RequestContainer = query.ServiceProvider
             };
+
             var option = new OrderByQueryOption(orderbyText, queryContext, queryOptionParser);
             var validator = new OrderByQueryValidator();
             validator.Validate(option, settings.ValidationSettings);

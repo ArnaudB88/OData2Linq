@@ -1,4 +1,4 @@
-﻿using Microsoft.OData;
+using Microsoft.OData;
 using OData2Linq.Tests.SampleData;
 using Xunit;
 

@@ -15,7 +15,7 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        dotnet-version: ['6.0.x']
+        dotnet-version: ['8.0.x']
 
     steps:
     - uses: actions/checkout@v4
@@ -24,8 +24,8 @@ jobs:
       with:
         dotnet-version: ${{ matrix.dotnet-version }}
     - name: Restore dependencies
-      run: dotnet restore ./AspNetCoreOData.sln
+      run: dotnet restore ./OData2Linq.sln
     - name: Build
-      run: dotnet build ./AspNetCoreOData.sln --no-restore
+      run: dotnet build ./OData2Linq.sln --no-restore
     - name: Test
-      run: dotnet test ./AspNetCoreOData.sln --no-build --verbosity normal
+      run: dotnet test ./OData2Linq.sln --no-build --verbosity normal
