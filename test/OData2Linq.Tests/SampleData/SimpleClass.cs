@@ -42,7 +42,7 @@ namespace OData2Linq.Tests.SampleData
 
         public int Id { get; set; }
 
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         public DateTime DateTime { get; set; }
 
@@ -55,10 +55,10 @@ namespace OData2Linq.Tests.SampleData
         public TestEnum TestEnum { get; set; }
 
         [IgnoreDataMember]
-        public string NameToIgnore { get; set; }
+        public string? NameToIgnore { get; set; }
 
         [NonFilterable]
-        public string NameNotFilter { get; set; }
+        public string? NameNotFilter { get; set; }
 
         [NotSortable]
         public int NotOrderable { get; set; }

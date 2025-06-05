@@ -1,4 +1,4 @@
-﻿namespace OData2Linq.Tests.SampleData
+namespace OData2Linq.Tests.SampleData
 {
     using System.Linq;
     using System.Runtime.Serialization;
@@ -21,11 +21,11 @@
         public int Id { get; set; }
 
         [DataMember(Name = "nameChanged")]
-        public string Name { get; set; }
+        public required string Name { get; set; }
 
         [IgnoreDataMember]
-        public string NameToIgnore { get; set; }
+        public required string NameToIgnore { get; set; }
 
-        public string NameNotMarked { get; set; }
+        public required string NameNotMarked { get; set; }
     }
 }

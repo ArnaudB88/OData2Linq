@@ -1,4 +1,4 @@
-﻿namespace OData2Linq.Tests.SampleData
+namespace OData2Linq.Tests.SampleData
 {
     using Microsoft.OData.ModelBuilder;
     using System;
@@ -36,31 +36,31 @@
         }
 
         [Key]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         public DateTime DateTime { get; set; }
 
         [NotExpandable]
-        public ICollection<SimpleClass> NotExpandableLink { get; set; }
+        public ICollection<SimpleClass>? NotExpandableLink { get; set; }
 
         [Expand(ExpandType = SelectExpandType.Automatic, MaxDepth = 2)]
-        public SimpleClass ExpandableLink { get; set; }
+        public SimpleClass? ExpandableLink { get; set; }
 
         [Select(SelectType = SelectExpandType.Automatic)]
-        public SimpleClass SelectableLink { get; set; }
+        public SimpleClass? SelectableLink { get; set; }
 
         [AutoExpand(DisableWhenSelectPresent = true)]
-        public SimpleClass AutoExpandLink { get; set; }
+        public SimpleClass? AutoExpandLink { get; set; }
 
         [AutoExpand(DisableWhenSelectPresent = true)]
         [Select(SelectType = SelectExpandType.Automatic)]
-        public SimpleClass AutoExpandAndSelectLink { get; set; }
+        public SimpleClass? AutoExpandAndSelectLink { get; set; }
 
         [Expand(ExpandType = SelectExpandType.Automatic, MaxDepth = 2)]
         [Select(SelectType = SelectExpandType.Automatic)]
-        public SimpleClass ExpandAndSelectLink { get; set; }
+        public SimpleClass? ExpandAndSelectLink { get; set; }
 
         [Expand(ExpandType = SelectExpandType.Automatic, MaxDepth = 2)]
-        public SampleWithCustomKey RecursiveLink { get; set; }
+        public SampleWithCustomKey? RecursiveLink { get; set; }
     }
 }

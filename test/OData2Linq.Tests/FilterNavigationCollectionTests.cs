@@ -1,6 +1,6 @@
-﻿namespace OData2Linq.Tests
+namespace OData2Linq.Tests
 {
-    using OData2Linq.Tests.SampleData;
+    using SampleData;
     using System.Collections;
     using System.Linq;
     using Xunit;

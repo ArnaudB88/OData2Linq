@@ -1,10 +1,10 @@
-﻿namespace OData2Linq.Tests.SampleData
+namespace OData2Linq.Tests.SampleData
 {
     public class OpenType
     {
         public int Id { get; set; }
 
-        public IDictionary<string, object> DynamicProperties { get; set; }
+        public IDictionary<string, object>? DynamicProperties { get; set; }
 
         private static readonly OpenType[] items = new[]
         {

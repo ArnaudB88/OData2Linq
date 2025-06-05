@@ -1,9 +1,9 @@
-﻿namespace OData2Linq.Helpers
+namespace OData2Linq.Helpers
 {
     using Microsoft.AspNetCore.OData;
     using Microsoft.AspNetCore.OData.Query;
     using Microsoft.OData;
-    using OData2Linq.Settings;
+    using Settings;
     using System.Linq;
 
     internal class TopSkipHelper
@@ -22,7 +22,7 @@
                     throw new ODataException(Error.Format(SRResources.SkipTopLimitExceeded, settings.ValidationSettings.MaxTop, AllowedQueryOptions.Top, top.Value));
                 }
 
-                IQueryable<T> result = ExpressionHelpers.Take(query, (int)top.Value, typeof(T), settings.QuerySettings.EnableConstantParameterization) as IQueryable<T>;
+                IQueryable<T> result = (IQueryable<T>)ExpressionHelpers.Take(query, (int)top.Value, typeof(T), settings.QuerySettings.EnableConstantParameterization);
 
                 return result;
             }
@@ -44,7 +44,7 @@
                     throw new ODataException(Error.Format(SRResources.SkipTopLimitExceeded, settings.ValidationSettings.MaxSkip, AllowedQueryOptions.Skip, skip.Value));
                 }
 
-                IQueryable<T> result = ExpressionHelpers.Skip(query, (int)skip.Value, typeof(T), settings.QuerySettings.EnableConstantParameterization) as IQueryable<T>;
+                IQueryable<T> result = (IQueryable<T>)ExpressionHelpers.Skip(query, (int)skip.Value, typeof(T), settings.QuerySettings.EnableConstantParameterization);
 
                 return result;
             }

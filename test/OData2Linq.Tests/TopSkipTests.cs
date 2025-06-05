@@ -1,7 +1,7 @@
-﻿namespace OData2Linq.Tests
+namespace OData2Linq.Tests
 {
     using Microsoft.OData;
-    using OData2Linq.Tests.SampleData;
+    using SampleData;
     using System.Linq;
     using Xunit;
 
@@ -14,7 +14,7 @@
         [InlineData(null, null, 2, "n1")]
         [InlineData("0", "1", 0, null)]
         [InlineData("0", "0", 0, null)]
-        public void TopSkip(string top, string skip, int count, string expectedName)
+        public void TopSkip(string? top, string? skip, int count, string? expectedName)
         {
             var result = SimpleClass.CreateQuery().OData().TopSkip(top, skip).ToArray();
 

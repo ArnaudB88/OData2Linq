@@ -2,21 +2,21 @@
 
 namespace OData2Linq.Tests.Issues33
 {
-    using OData2Linq.Settings;
+    using Settings;
     using System;
     using System.Linq;
     using Xunit;
 
     public class RecursiveComplexType
     {
-        public RecursiveComplexType SelfReference { get; set; }
+        public RecursiveComplexType? SelfReference { get; set; }
     }
 
     public class ListItem
     {
         public int Id { get; set; }
 
-        public RecursiveComplexType RecursiveComplexType { get; set; }
+        public RecursiveComplexType? RecursiveComplexType { get; set; }
     }
 
     public class Issue33
@@ -56,7 +56,9 @@ namespace OData2Linq.Tests.Issues33
 
             var result = queryable.OData(x =>
             {
+#pragma warning disable CS0618
                 x.AllowRecursiveLoopOfComplexTypes = true;
+#pragma warning restore CS0618
 
             }).Filter("Id eq 1").ToArray();
 
@@ -78,8 +80,9 @@ namespace OData2Linq.Tests.Issues33
 
             ODataSettings.SetInitializer(x =>
             {
+#pragma warning disable CS0618
                 x.AllowRecursiveLoopOfComplexTypes = true;
-
+#pragma warning restore CS0618
             });
 
             // act

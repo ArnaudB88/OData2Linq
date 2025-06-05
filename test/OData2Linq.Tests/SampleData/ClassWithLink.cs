@@ -1,4 +1,4 @@
-﻿namespace OData2Linq.Tests.SampleData
+namespace OData2Linq.Tests.SampleData
 {
     using Microsoft.OData.ModelBuilder;
     using System.Linq;
@@ -18,17 +18,17 @@
 
         public long Id { get; set; }
 
-        public string Name { get; set; }
+        public required string Name { get; set; }
 
-        public virtual SimpleClass Link1 { get; set; }
+        public virtual SimpleClass? Link1 { get; set; }
 
         [NotNavigable]
-        public virtual SimpleClass Link2 { get; set; }
+        public virtual SimpleClass? Link2 { get; set; }
 
         [Select(SelectType = SelectExpandType.Automatic)]
-        public virtual SimpleClass Link3 { get; set; }
+        public virtual SimpleClass? Link3 { get; set; }
 
         [Select(SelectType = SelectExpandType.Disabled)]
-        public virtual SimpleClass Link4 { get; set; }
+        public virtual SimpleClass? Link4 { get; set; }
     }
 }

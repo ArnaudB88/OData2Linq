@@ -1,6 +1,6 @@
-﻿namespace OData2Linq.Tests
+namespace OData2Linq.Tests
 {
-    using OData2Linq.Tests.SampleData;
+    using SampleData;
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
@@ -40,12 +40,13 @@
             //Act
             var odata = items.AsQueryable().OData();
             var filteredItems = odata.Filter("Number eq 2");
-            //((IDisposable)odata.ServiceProvider).Dispose(); //Makes no difference in memory usage
+            GC.Collect();
 
             //Assert
             Assert.Equal(1, filteredItems.Count());
 
             Process currentProc = Process.GetCurrentProcess();
+
             var bytesInUse = currentProc.PrivateMemorySize64 / (double)1000_000;
             if (MemoryUsageInMBStart == default)
                 MemoryUsageInMBStart = bytesInUse;

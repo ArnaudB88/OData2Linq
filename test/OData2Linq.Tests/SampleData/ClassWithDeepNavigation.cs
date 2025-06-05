@@ -1,4 +1,4 @@
-﻿using Microsoft.OData.ModelBuilder;
+using Microsoft.OData.ModelBuilder;
 
 namespace OData2Linq.Tests.SampleData
 {
@@ -17,11 +17,11 @@ namespace OData2Linq.Tests.SampleData
 
         public long Id { get; set; }
 
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         [Expand(MaxDepth = 3)]
-        public virtual ClassWithDeepNavigation D1 { get; set; }
-        public virtual ClassWithDeepNavigation D2 { get; set; }
-        public virtual ClassWithDeepNavigation D3 { get; set; }
+        public virtual ClassWithDeepNavigation? D1 { get; set; }
+        public virtual ClassWithDeepNavigation? D2 { get; set; }
+        public virtual ClassWithDeepNavigation? D3 { get; set; }
     }
 }

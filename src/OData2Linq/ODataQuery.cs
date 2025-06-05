@@ -1,4 +1,4 @@
-﻿namespace OData2Linq
+namespace OData2Linq
 {
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.OData.Edm;
@@ -24,7 +24,8 @@
 
         public IQueryProvider Provider => Inner.Provider;
 
-        public IQueryable Inner { get; }
+        private IQueryable Inner { get; }
+        
         public IServiceProvider ServiceProvider { get; }
 
         public IEnumerator GetEnumerator()

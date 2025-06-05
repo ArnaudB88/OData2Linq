@@ -1,8 +1,8 @@
-﻿namespace OData2Linq.Tests
+namespace OData2Linq.Tests
 {
     using Microsoft.AspNetCore.OData.Query.Wrapper;
     using Microsoft.OData;
-    using OData2Linq.Tests.SampleData;
+    using SampleData;
     using System.Collections.Generic;
     using System.Linq;
     using Xunit;
@@ -41,7 +41,7 @@
             // Not expanded by default
             Assert.Equal(3, metadata.Count);
 
-            Assert.Equal(SimpleClass.NumberOfProperties, (metadata["Link1"] as ISelectExpandWrapper).ToDictionary().Count);
+            Assert.Equal(SimpleClass.NumberOfProperties, ((ISelectExpandWrapper)metadata["Link1"]).ToDictionary().Count);
         }
 
         [Fact]
@@ -53,7 +53,7 @@
 
             // Not expanded by default
             Assert.Equal(2, metadata.Count);
-            Assert.Equal(SimpleClass.NumberOfProperties, (metadata["Link1"] as ISelectExpandWrapper).ToDictionary().Count);
+            Assert.Equal(SimpleClass.NumberOfProperties, ((ISelectExpandWrapper)metadata["Link1"]).ToDictionary().Count);
         }
 
         [Fact]
@@ -65,7 +65,7 @@
 
             // Not expanded by default
             Assert.Equal(2, metadata.Count);
-            Assert.Equal(1, (metadata["Link1"] as ISelectExpandWrapper).ToDictionary().Count);
+            Assert.Single(((ISelectExpandWrapper)metadata["Link1"]).ToDictionary());
         }
 
         [Fact]
@@ -77,7 +77,7 @@
 
             // Not expanded by default
             Assert.Equal(2, metadata.Count);
-            Assert.Equal(2, (metadata["Link2"] as IEnumerable<ISelectExpandWrapper>).Count());
+            Assert.Equal(2, ((IEnumerable<ISelectExpandWrapper>)metadata["Link2"]).Count());
         }
 
         [Fact]
@@ -89,7 +89,7 @@
 
             // Not expanded by default
             Assert.Equal(2, metadata.Count);
-            Assert.Single((metadata["Link2"] as IEnumerable<ISelectExpandWrapper>));
+            Assert.Single((IEnumerable<ISelectExpandWrapper>)metadata["Link2"]);
         }
 
         [Fact]
@@ -101,7 +101,7 @@
 
             // Not expanded by default
             Assert.Equal(2, metadata.Count);
-            Assert.Single((metadata["Link2"] as IEnumerable<ISelectExpandWrapper>));
+            Assert.Single((IEnumerable<ISelectExpandWrapper>)metadata["Link2"]);
         }
 
         [Fact]
@@ -113,7 +113,7 @@
 
             // Not expanded by default
             Assert.Equal(2, metadata.Count);
-            Assert.Equal(2, (metadata["Link2"] as IEnumerable<ISelectExpandWrapper>).Count());
+            Assert.Equal(2, ((IEnumerable<ISelectExpandWrapper>)metadata["Link2"]).Count());
         }
 
         [Fact]
@@ -132,10 +132,10 @@
 
             // Not expanded by default
             Assert.Equal(2, metadata.Count);
-            IEnumerable<ISelectExpandWrapper> collection = metadata["Link2"] as IEnumerable<ISelectExpandWrapper>;
+            List<ISelectExpandWrapper> collection = ((IEnumerable<ISelectExpandWrapper>)metadata["Link2"]).ToList();
             Assert.Single(collection);
 
-            Assert.Equal(1, collection.Single().ToDictionary().Count);
+            Assert.Single(collection.Single().ToDictionary());
         }
 
         [Fact]
@@ -155,8 +155,8 @@
             // Not expanded by default
             Assert.Equal(4, metadata.Count);
 
-            Assert.Equal(SimpleClass.NumberOfProperties, (metadata["AutoExpandLink"] as ISelectExpandWrapper).ToDictionary().Count);
-            Assert.Equal(SimpleClass.NumberOfProperties, (metadata["AutoExpandAndSelectLink"] as ISelectExpandWrapper).ToDictionary().Count);
+            Assert.Equal(SimpleClass.NumberOfProperties, ((ISelectExpandWrapper)metadata["AutoExpandLink"]).ToDictionary().Count);
+            Assert.Equal(SimpleClass.NumberOfProperties, ((ISelectExpandWrapper)metadata["AutoExpandAndSelectLink"]).ToDictionary().Count);
         }
 
         [Fact]
@@ -169,7 +169,7 @@
             // Not expanded by default
             Assert.Equal(3, metadata.Count);
 
-            Assert.Equal(SimpleClass.NumberOfProperties, (metadata["AutoExpandAndSelectLink"] as ISelectExpandWrapper).ToDictionary().Count);
+            Assert.Equal(SimpleClass.NumberOfProperties, ((ISelectExpandWrapper)metadata["AutoExpandAndSelectLink"]).ToDictionary().Count);
         }
 
         [Fact]
@@ -200,7 +200,7 @@
             IDictionary<string, object> metadata = result[0].ToDictionary();
 
             Assert.Equal(3, metadata.Count);
-            Assert.Equal("n1123", (((metadata["D1"] as ISelectExpandWrapper).ToDictionary()["D2"] as ISelectExpandWrapper).ToDictionary()["D3"] as ISelectExpandWrapper).ToDictionary()["Name"]);
+            Assert.Equal("n1123", ((ISelectExpandWrapper)((ISelectExpandWrapper)((ISelectExpandWrapper)metadata["D1"]).ToDictionary()["D2"]).ToDictionary()["D3"]).ToDictionary()["Name"]);
         }
     }
 }

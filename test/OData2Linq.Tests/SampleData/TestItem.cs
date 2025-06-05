@@ -1,5 +1,3 @@
-﻿using System;
-
 namespace OData2Linq.Tests.SampleData
 {
     /// <summary>
@@ -8,7 +6,7 @@ namespace OData2Linq.Tests.SampleData
     public class TestItem
     {
         public Guid Id { get; set; }
-        public string Name { get; set; }
+        public required string Name { get; set; }
         public int Number { get; set; }
     }
 

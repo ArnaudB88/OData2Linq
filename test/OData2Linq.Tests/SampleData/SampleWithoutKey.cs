@@ -1,4 +1,4 @@
-﻿namespace OData2Linq.Tests.SampleData
+namespace OData2Linq.Tests.SampleData
 {
     using System;
     using System.Linq;
@@ -16,7 +16,7 @@
             return items.AsQueryable();
         }
 
-        public string Name { get; set; }
+        public required string Name { get; set; }
 
         public DateTime DateTime { get; set; }
     }
