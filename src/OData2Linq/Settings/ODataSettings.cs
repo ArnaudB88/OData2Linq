@@ -6,9 +6,9 @@
 
     public class ODataSettings
     {
-        private static readonly object SyncObj = new object();
+        private static readonly object SyncObj = new();
 
-        private static Action<ODataSettings> Initializer = null;
+        private static Action<ODataSettings>? Initializer = null;
 
         /// <summary>
         /// Sets the action which will be used to initialize every instance of <type ref="ODataSettings"></type>.
@@ -18,7 +18,7 @@
         /// <exception cref="InvalidOperationException">SetInitializer</exception>
         public static void SetInitializer(Action<ODataSettings> initializer)
         {
-            if (initializer == null) throw new ArgumentNullException(nameof(initializer));
+            ArgumentNullException.ThrowIfNull(initializer);
 
             if (Initializer == null)
             {
@@ -46,9 +46,6 @@
         public ODataUriResolver Resolver { get; set; } = DefaultResolver;
 
         public bool EnableCaseInsensitive { get; set; } = true;
-
-        [Obsolete("Not supported anymore")]
-        public bool AllowRecursiveLoopOfComplexTypes { get; set; } = false;
 
         public DefaultQueryConfigurationsHashable DefaultQueryConfigurations { get; } = new DefaultQueryConfigurationsHashable
         {
