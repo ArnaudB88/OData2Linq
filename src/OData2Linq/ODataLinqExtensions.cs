@@ -73,7 +73,7 @@
 
             var container = new ServiceContainer(baseContainer);
             container.AddService(typeof(IEdmModel), edmModel);
-            container.AddService(typeof(ODataUriResolver), settings.Resolver ?? ODataSettings.DefaultResolver);
+            container.AddService(typeof(ODataUriResolver), settings.Resolver);
             container.AddService(typeof(ODataSettings), settings);
 
             var dataQuery = new ODataQuery<T>(query, container);
@@ -368,14 +368,7 @@
 
             var path = new ODataPath(new EntitySetSegment(entitySet));
 
-            var parser = new ODataQueryOptionParser(edmModel, path, raws, query.ServiceProvider);
-
-            var settings = query.ServiceProvider.GetRequiredService<ODataSettings>();
-
-            // Workaround for strange behavior in QueryOptionsParserConfiguration constructor which set it to false always
-            parser.Resolver.EnableCaseInsensitive = settings.EnableCaseInsensitive;
-
-            return parser;
+            return new ODataQueryOptionParser(edmModel, path, raws, query.ServiceProvider);
         }
     }
 }

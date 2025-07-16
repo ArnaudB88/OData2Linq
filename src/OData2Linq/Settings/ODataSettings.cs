@@ -35,17 +35,19 @@
             throw new InvalidOperationException($"{nameof(SetInitializer)} method can be invoked only once");
         }
 
-        internal static ODataUriResolver DefaultResolver = new StringAsEnumResolver { EnableCaseInsensitive = true };
-
         public ODataQuerySettingsHashable QuerySettings { get; } = new ODataQuerySettingsHashable { PageSize = 20 };
 
         public ODataValidationSettings ValidationSettings { get; } = new ODataValidationSettings();
 
         public ODataUriParserSettings ParserSettings { get; } = new ODataUriParserSettings();
 
-        public ODataUriResolver Resolver { get; set; } = DefaultResolver;
+        public ODataUriResolver Resolver { get; set; } = new StringAsEnumResolver { EnableCaseInsensitive = true };
 
-        public bool EnableCaseInsensitive { get; set; } = true;
+        public bool EnableCaseInsensitive
+        {
+            get => Resolver.EnableCaseInsensitive;
+            set => Resolver.EnableCaseInsensitive = value;
+        }
 
         public DefaultQueryConfigurationsHashable DefaultQueryConfigurations { get; } = new DefaultQueryConfigurationsHashable
         {
