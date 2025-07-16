@@ -4,7 +4,6 @@
     using Microsoft.AspNetCore.OData.Query.Validator;
     using Microsoft.AspNetCore.OData.Query.Wrapper;
     using Microsoft.Extensions.DependencyInjection;
-    using Microsoft.OData;
     using Microsoft.OData.Edm;
     using Microsoft.OData.ModelBuilder;
     using Microsoft.OData.UriParser;
@@ -18,11 +17,6 @@
 
     public static class ODataLinqExtensions
     {
-        /// <summary>
-        /// The simplified options.
-        /// </summary>
-        private static readonly ODataSimplifiedOptions SimplifiedOptions = new ODataSimplifiedOptions();
-
         private static readonly ConcurrentDictionary<Type, IEdmModel> Models = new ConcurrentDictionary<Type, IEdmModel>();
 
         private static readonly ConcurrentDictionary<int, ServiceContainer> Containers = new ConcurrentDictionary<int, ServiceContainer>();
@@ -73,7 +67,6 @@
 
                 c.AddService(typeof(ODataQuerySettings), settings.QuerySettings);
                 c.AddService(typeof(DefaultQueryConfigurations), settings.DefaultQueryConfigurations);
-                c.AddService(typeof(ODataSimplifiedOptions), SimplifiedOptions);
                 c.AddService(typeof(ODataUriParserSettings), settings.ParserSettings);
 
                 return c;
