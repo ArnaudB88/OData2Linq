@@ -24,11 +24,11 @@ jobs:
       with:
         dotnet-version: ${{ matrix.dotnet-version }}
     - name: Restore dependencies
-      run: dotnet restore ./AspNetCoreOData.sln
+      run: dotnet restore ./OData2Linq.sln
     - name: Build
-      run: dotnet build ./AspNetCoreOData.sln --no-restore
+      run: dotnet build ./OData2Linq.sln --no-restore
     - name: Test
-      run: dotnet test ./AspNetCoreOData.sln --no-build --verbosity normal --logger trx --results-directory "TestResults-${{ matrix.dotnet-version }}"
+      run: dotnet test ./OData2Linq.sln --no-build --verbosity normal --logger trx --results-directory "TestResults-${{ matrix.dotnet-version }}"
     - name: Upload test results
       uses: actions/upload-artifact@v4
       with:
