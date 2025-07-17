@@ -1,10 +1,12 @@
-﻿namespace OData2Linq.Helpers
+namespace OData2Linq.Helpers
 {
     using Microsoft.AspNetCore.OData;
     using Microsoft.AspNetCore.OData.Query;
     using Microsoft.OData;
-    using OData2Linq.Settings;
+    using Settings;
     using System.Linq;
+    using AllowedQueryOptions = Microsoft.AspNetCore.OData.Query.AllowedQueryOptions;
+    using Error = Microsoft.AspNetCore.OData.Error;
 
     internal static class TopSkipHelper
     {
