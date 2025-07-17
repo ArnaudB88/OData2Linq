@@ -1,4 +1,4 @@
-AspNetCoreOData
+OData2Linq
 
 Copyright (c) .NET Foundation and Contributors
 
