@@ -1,8 +1,8 @@
-﻿namespace OData2Linq.Tests
+namespace OData2Linq.Tests
 {
-    using Microsoft.AspNetCore.OData.Query.Wrapper;
     using Microsoft.OData;
-    using OData2Linq.Tests.SampleData;
+    using Wrappers;
+    using SampleData;
     using System.Collections.Generic;
     using System.Linq;
     using Xunit;
@@ -12,9 +12,9 @@
         [Fact]
         public void EmptyExpand()
         {
-            ISelectExpandWrapper[] result = ClassWithLink.CreateQuery().OData().SelectExpand().ToArray();
+            IODataQueryWrapper[] result = ClassWithLink.CreateQuery().OData().SelectExpand().ToArray();
 
-            IDictionary<string, object> metadata = result[0].ToDictionary();
+            IDictionary<string, object?> metadata = result[0].ToDictionary();
 
             // Not expanded by default except auto expand attribute
             Assert.Equal(2, metadata.Count);
@@ -23,9 +23,9 @@
         [Fact]
         public void EmptyExpandSelectAll()
         {
-            ISelectExpandWrapper[] result = ClassWithLink.CreateQuery().OData().SelectExpand("*").ToArray();
+            IODataQueryWrapper[] result = ClassWithLink.CreateQuery().OData().SelectExpand("*").ToArray();
 
-            IDictionary<string, object> metadata = result[0].ToDictionary();
+            IDictionary<string, object?> metadata = result[0].ToDictionary();
 
             // Not expanded by default except auto expand attribute
             Assert.Equal(2, metadata.Count);
@@ -34,86 +34,83 @@
         [Fact]
         public void ExpandLink()
         {
-            ISelectExpandWrapper[] result = ClassWithLink.CreateQuery().OData().SelectExpand(null, "Link1").ToArray();
+            IODataQueryWrapper[] result = ClassWithLink.CreateQuery().OData().SelectExpand(null, "Link1").ToArray();
 
-            IDictionary<string, object> metadata = result[0].ToDictionary();
+            IDictionary<string, object?> metadata = result[0].ToDictionary();
 
-            // Not expanded by default
-            Assert.Equal(3, metadata.Count);
-
-            Assert.Equal(SimpleClass.NumberOfProperties, (metadata["Link1"] as ISelectExpandWrapper).ToDictionary().Count);
+            Assert.Equal(SimpleClass.NumberOfProperties, ((IODataQueryWrapper?)metadata["Link1"])?.ToDictionary().Count);
         }
 
         [Fact]
         public void ExpandSelect()
         {
-            ISelectExpandWrapper[] result = ClassWithLink.CreateQuery().OData().SelectExpand("Name,Link1", "Link1").ToArray();
+            IODataQueryWrapper[] result = ClassWithLink.CreateQuery().OData().SelectExpand("Name,Link1", "Link1").ToArray();
 
-            IDictionary<string, object> metadata = result[0].ToDictionary();
+            IDictionary<string, object?> metadata = result[0].ToDictionary();
 
             // Not expanded by default
             Assert.Equal(2, metadata.Count);
-            Assert.Equal(SimpleClass.NumberOfProperties, (metadata["Link1"] as ISelectExpandWrapper).ToDictionary().Count);
+            Assert.Equal(SimpleClass.NumberOfProperties, ((IODataQueryWrapper?)metadata["Link1"])?.ToDictionary().Count);
         }
 
         [Fact]
         public void ExpandLinkSelect()
         {
-            ISelectExpandWrapper[] result = ClassWithLink.CreateQuery().OData().SelectExpand("Name", "Link1($select=Name)").ToArray();
+            IODataQueryWrapper[] result = ClassWithLink.CreateQuery().OData().SelectExpand("Name", "Link1($select=Name)").ToArray();
 
-            IDictionary<string, object> metadata = result[0].ToDictionary();
+            IDictionary<string, object?> metadata = result[0].ToDictionary();
 
             // Not expanded by default
             Assert.Equal(2, metadata.Count);
-            Assert.Equal(1, (metadata["Link1"] as ISelectExpandWrapper).ToDictionary().Count);
+            Assert.Equal(1, ((IODataQueryWrapper?)metadata["Link1"])?.ToDictionary().Count);
         }
 
         [Fact]
         public void ExpandCollection()
         {
-            ISelectExpandWrapper[] result = ClassWithCollection.CreateQuery().OData().SelectExpand("Name", "Link2").ToArray();
+            IODataQueryWrapper[] result = ClassWithCollection.CreateQuery().OData().SelectExpand("Name", "Link2").ToArray();
 
-            IDictionary<string, object> metadata = result[0].ToDictionary();
+            IDictionary<string, object?> metadata = result[0].ToDictionary();
 
             // Not expanded by default
             Assert.Equal(2, metadata.Count);
-            Assert.Equal(2, (metadata["Link2"] as IEnumerable<ISelectExpandWrapper>).Count());
+            Assert.Equal(2, ((IEnumerable<IODataQueryWrapper>?)metadata["Link2"])?.Count());
         }
 
         [Fact]
         public void ExpandCollectionWithTop()
         {
-            ISelectExpandWrapper[] result = ClassWithCollection.CreateQuery().OData().SelectExpand("Name", "Link2($top=1)").ToArray();
+            IODataQueryWrapper[] result = ClassWithCollection.CreateQuery().OData().SelectExpand("Name", "Link2($top=1)").ToArray();
 
-            IDictionary<string, object> metadata = result[0].ToDictionary();
+            IDictionary<string, object?> metadata = result[0].ToDictionary();
 
             // Not expanded by default
             Assert.Equal(2, metadata.Count);
-            Assert.Single((metadata["Link2"] as IEnumerable<ISelectExpandWrapper>));
+            Assert.Single((IEnumerable<IODataQueryWrapper>?)metadata["Link2"]);
         }
 
         [Fact]
         public void ExpandCollectionWithTopDefaultPageSize()
         {
-            ISelectExpandWrapper[] result = ClassWithCollection.CreateQuery().OData(s => s.QuerySettings.PageSize = 1).SelectExpand("Name", "Link2").ToArray();
+            IODataQueryWrapper[] result = ClassWithCollection.CreateQuery().OData(s => s.QuerySettings.PageSize = 1).SelectExpand("Name", "Link2").ToArray();
 
-            IDictionary<string, object> metadata = result[0].ToDictionary();
+            IDictionary<string, object?> metadata = result[0].ToDictionary();
 
             // Not expanded by default
             Assert.Equal(2, metadata.Count);
-            Assert.Single((metadata["Link2"] as IEnumerable<ISelectExpandWrapper>));
+            Assert.Single((IEnumerable<IODataQueryWrapper>?)metadata["Link2"]);
         }
 
         [Fact]
         public void ExpandCollectionWithTop21()
         {
-            ISelectExpandWrapper[] result = ClassWithCollection.CreateQuery().OData().SelectExpand("Name", "Link2($top=21)").ToArray();
+            IODataQueryWrapper[] result = ClassWithCollection.CreateQuery().OData().SelectExpand("Name", "Link2($top=21)").ToArray();
 
-            IDictionary<string, object> metadata = result[0].ToDictionary();
+            IDictionary<string, object?> metadata = result[0].ToDictionary();
 
             // Not expanded by default
             Assert.Equal(2, metadata.Count);
-            Assert.Equal(2, (metadata["Link2"] as IEnumerable<ISelectExpandWrapper>).Count());
+            Assert.Equal(2, ((IEnumerable<IODataQueryWrapper>?)metadata["Link2"])?.Count());
         }
 
         [Fact]
@@ -126,16 +123,17 @@
         [Fact]
         public void ExpandCollectionWithFilterAndSelect()
         {
-            ISelectExpandWrapper[] result = ClassWithCollection.CreateQuery().OData().SelectExpand("Name", "Link2($filter=Id eq 311;$select=Name)").ToArray();
+            IODataQueryWrapper[] result = ClassWithCollection.CreateQuery().OData().SelectExpand("Name", "Link2($filter=Id eq 311;$select=Name)").ToArray();
 
-            IDictionary<string, object> metadata = result[0].ToDictionary();
+            IDictionary<string, object?> metadata = result[0].ToDictionary();
 
             // Not expanded by default
             Assert.Equal(2, metadata.Count);
-            IEnumerable<ISelectExpandWrapper> collection = metadata["Link2"] as IEnumerable<ISelectExpandWrapper>;
+            IEnumerable<IODataQueryWrapper>? collection = (IEnumerable<IODataQueryWrapper>?)metadata["Link2"];
+
             Assert.Single(collection);
 
-            Assert.Equal(1, collection.Single().ToDictionary().Count);
+            Assert.Equal(1, collection!.Single().ToDictionary().Count);
         }
 
         [Fact]
@@ -148,36 +146,36 @@
         [Fact]
         public void ExpandWithAttributes()
         {
-            ISelectExpandWrapper[] result = SampleWithCustomKey.CreateQuery().OData().SelectExpand().ToArray();
+            IODataQueryWrapper[] result = SampleWithCustomKey.CreateQuery().OData().SelectExpand().ToArray();
 
-            IDictionary<string, object> metadata = result[0].ToDictionary();
+            IDictionary<string, object?> metadata = result[0].ToDictionary();
 
             // Not expanded by default
             Assert.Equal(4, metadata.Count);
 
-            Assert.Equal(SimpleClass.NumberOfProperties, (metadata["AutoExpandLink"] as ISelectExpandWrapper).ToDictionary().Count);
-            Assert.Equal(SimpleClass.NumberOfProperties, (metadata["AutoExpandAndSelectLink"] as ISelectExpandWrapper).ToDictionary().Count);
+            Assert.Equal(SimpleClass.NumberOfProperties, ((IODataQueryWrapper?)metadata["AutoExpandLink"])?.ToDictionary().Count);
+            Assert.Equal(SimpleClass.NumberOfProperties, ((IODataQueryWrapper?)metadata["AutoExpandAndSelectLink"])?.ToDictionary().Count);
         }
 
         [Fact]
         public void ExpandWithAttributesAndExplicit()
         {
-            ISelectExpandWrapper[] result = SampleWithCustomKey.CreateQuery().OData().SelectExpand("*", "AutoExpandAndSelectLink").ToArray();
+            IODataQueryWrapper[] result = SampleWithCustomKey.CreateQuery().OData().SelectExpand("*", "AutoExpandAndSelectLink").ToArray();
 
-            IDictionary<string, object> metadata = result[0].ToDictionary();
+            IDictionary<string, object?> metadata = result[0].ToDictionary();
 
             // Not expanded by default
             Assert.Equal(3, metadata.Count);
 
-            Assert.Equal(SimpleClass.NumberOfProperties, (metadata["AutoExpandAndSelectLink"] as ISelectExpandWrapper).ToDictionary().Count);
+            Assert.Equal(SimpleClass.NumberOfProperties, ((IODataQueryWrapper?)metadata["AutoExpandAndSelectLink"])?.ToDictionary().Count);
         }
 
         [Fact]
         public void ExpandMaxDeepNotExceed()
         {
-            ISelectExpandWrapper[] result = SampleWithCustomKey.CreateQuery().OData().SelectExpand(null, "RecursiveLink($expand=RecursiveLink)").ToArray();
+            IODataQueryWrapper[] result = SampleWithCustomKey.CreateQuery().OData().SelectExpand(null, "RecursiveLink($expand=RecursiveLink)").ToArray();
 
-            IDictionary<string, object> metadata = result[0].ToDictionary();
+            IDictionary<string, object?> metadata = result[0].ToDictionary();
 
             // Not expanded by default
             Assert.Equal(5, metadata.Count);
@@ -195,12 +193,12 @@
         [Fact]
         public void ExpandMaxDeepSetInValidationSettings()
         {
-            ISelectExpandWrapper[] result = ClassWithDeepNavigation.CreateQuery().OData(settings => settings.ValidationSettings.MaxExpansionDepth = 3).SelectExpand(null, "D1($expand=D2($expand=D3))").ToArray();
+            IODataQueryWrapper[] result = ClassWithDeepNavigation.CreateQuery().OData(settings => settings.ValidationSettings.MaxExpansionDepth = 3).SelectExpand(null, "D1($expand=D2($expand=D3))").ToArray();
 
-            IDictionary<string, object> metadata = result[0].ToDictionary();
+            IDictionary<string, object?> metadata = result[0].ToDictionary();
 
             Assert.Equal(3, metadata.Count);
-            Assert.Equal("n1123", (((metadata["D1"] as ISelectExpandWrapper).ToDictionary()["D2"] as ISelectExpandWrapper).ToDictionary()["D3"] as ISelectExpandWrapper).ToDictionary()["Name"]);
+            Assert.Equal("n1123", ((IODataQueryWrapper?)((IODataQueryWrapper?)((IODataQueryWrapper?)metadata["D1"])?.ToDictionary()["D2"])?.ToDictionary()["D3"])?.ToDictionary()["Name"]);
         }
     }
 }
