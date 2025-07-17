@@ -1,15 +1,18 @@
-﻿namespace OData2Linq.Helpers
+namespace OData2Linq.Helpers
 {
     using Microsoft.AspNetCore.OData.Edm;
     using Microsoft.AspNetCore.OData.Query;
-    using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.AspNetCore.OData.Query.Wrapper;
     using Microsoft.OData.Edm;
     using Microsoft.OData.UriParser;
-    using OData2Linq.Settings;
+    using Settings;
     using System;
     using System.Collections.Generic;
     using System.Globalization;
     using System.Linq;
+    using DependencyInjection;
+    using ODataQuerySettings = Settings.ODataQuerySettings;
+    using ODataRawQueryOptions = Settings.ODataRawQueryOptions;
 
     internal class SelectExpandHelper<T>
     {
@@ -103,7 +106,7 @@
             IQueryable result = query;
             if (_selectExpand != null)
             {
-                var tempResult = ApplySelectExpand(result, query.ServiceProvider.GetRequiredService<ODataQuerySettings>());
+                var tempResult = ApplySelectExpand<T>(result, query.ServiceProvider.GetRequiredService<ODataQuerySettings>());
                 if (tempResult != default(IQueryable))
                 {
                     result = tempResult;
@@ -113,9 +116,9 @@
             return result;
         }
 
-        private TSelect? ApplySelectExpand<TSelect>(TSelect entity, ODataQuerySettings settings)
+        private IQueryable<ISelectExpandWrapper>? ApplySelectExpand<TSelect>(IQueryable entity, ODataQuerySettings settings)
         {
-            var result = default(TSelect);
+            var result = default(IQueryable<ISelectExpandWrapper>?);
 
             if (_selectExpand == null)
                 return result;
@@ -125,23 +128,19 @@
 
             var qsettings = _context.RequestContainer.GetRequiredService<ODataSettings>();
 
-            newSelectExpand.Validate(qsettings.ValidationSettings);
+            newSelectExpand.Validate(qsettings.ValidationSettings.ToAspNetCoreODataValidationSettings());
 
             var type = typeof(TSelect);
-            if (type == typeof(IQueryable))
-            {
-                result = (TSelect)newSelectExpand.ApplyTo((IQueryable)entity, settings);
-            }
-            else if (type == typeof(object))
-            {
-                result = (TSelect)newSelectExpand.ApplyTo(entity, settings);
-            }
 
+            if (type == typeof(IQueryable) || type == typeof(TSelect) || type == typeof(object))
+            {
+                result = (IQueryable<ISelectExpandWrapper>)newSelectExpand.ApplyTo(entity, settings.ToAspNetCoreODataQuerySettings());
+            }
 
             return result;
         }
 
-        private string GetAutoSelectRawValue()
+        private string? GetAutoSelectRawValue()
         {
             var selectRawValue = _rawValues.Select;
 
@@ -177,7 +176,7 @@
             return selectRawValue;
         }
 
-        private string GetAutoExpandRawValue()
+        private string? GetAutoExpandRawValue()
         {
             var expandRawValue = _rawValues.Expand;
 
