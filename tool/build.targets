@@ -1,3 +1,0 @@
-<Project>
-    <Import Project="$(BuildToolPath)builder.versions.settings.targets"/>
-</Project>
