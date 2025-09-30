@@ -7,10 +7,10 @@ namespace OData2Linq.Tests
     public class DateTimeFilterTests
     {
         private readonly ITestOutputHelper output;
-        private static readonly DateTime dtUtc = new DateTime(2018, 1, 26, 0, 0, 0, DateTimeKind.Utc);
-        private static readonly DateTime dtLocal = new DateTime(2018, 1, 26, 0, 0, 0, DateTimeKind.Local);
-        private static readonly DateTime dt = new DateTime(2018, 1, 26, 0, 0, 0);
-        private static readonly DateTimeOffset dto = new DateTimeOffset(dt, TimeZoneInfo.Local.BaseUtcOffset);
+        private static readonly DateTime dtUtc = new(2018, 1, 26, 0, 0, 0, DateTimeKind.Utc);
+        private static readonly DateTime dtLocal = new(2018, 1, 26, 0, 0, 0, DateTimeKind.Local);
+        private static readonly DateTime dt = new(2018, 1, 26, 0, 0, 0);
+        private static readonly DateTimeOffset dto = new(dt, TimeZoneInfo.Local.BaseUtcOffset);
         private static readonly DateOnly do1 = new(2018, 1, 26);
         private static readonly TimeOnly to1 = new(12, 34, 56);
         //private readonly DateTimeOffset dtoUtc = new DateTimeOffset(new DateTime(2018, 1, 26).ToUniversalTime());

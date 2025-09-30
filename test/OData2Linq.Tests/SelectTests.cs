@@ -38,7 +38,7 @@
             IDictionary<string, object> metadata = result[0].ToDictionary();
 
             // Expect Name to be selected
-            Assert.Equal(1, metadata.Count);
+            Assert.Single(metadata);
             Assert.Equal("Name", metadata.Single().Key);
             Assert.Equal("n1", metadata.Single().Value);
             Assert.IsType<string>(metadata.Single().Value);
@@ -52,7 +52,7 @@
             IDictionary<string, object> metadata = result[0].ToDictionary();
 
             // Expect Name to be selected
-            Assert.Equal(1, metadata.Count);
+            Assert.Single(metadata);
             Assert.Equal("nameChanged", metadata.Single().Key);
             Assert.Equal("n1", metadata.Single().Value);
             Assert.IsType<string>(metadata.Single().Value);
@@ -65,7 +65,7 @@
 
             IDictionary<string, object> metadata = result[0].ToDictionary();
 
-            Assert.Equal(1, metadata.Count);
+            Assert.Single(metadata);
             Assert.Equal("Id", metadata.Single().Key);
             Assert.IsType<int>(metadata.Single().Value);
             Assert.Equal(1, metadata.Single().Value);
@@ -78,7 +78,7 @@
 
             IDictionary<string, object> metadata = result[0].ToDictionary();
 
-            Assert.Equal(1, metadata.Count);
+            Assert.Single(metadata);
             Assert.Equal("Id", metadata.Single().Key, StringComparer.Ordinal);
             Assert.IsType<int>(metadata.Single().Value);
             Assert.Equal(1, metadata.Single().Value);
@@ -112,7 +112,7 @@
 
             IDictionary<string, object> metadata = result[0].ToDictionary();
 
-            Assert.Equal(0, metadata.Count);
+            Assert.Empty(metadata);
         }
 
         [Fact]
@@ -122,7 +122,7 @@
 
             IDictionary<string, object> metadata = result[0].ToDictionary();
 
-            Assert.Equal(0, metadata.Count);
+            Assert.Empty(metadata);
         }
     }
 }

@@ -24,7 +24,7 @@
             Assert.Throws<InvalidOperationException>(() => SampleWithoutKey.CreateQuery().OData());
         }
 
-        private static double MemoryUsageInMBStart = default;
+        private static double? MemoryUsageInMBStart;
         public static IEnumerable<object[]> Iterations() => Enumerable.Range(0, 1000).Select(i => new object[] { i });
         [Theory]
         [MemberData(nameof(Iterations))]
@@ -47,11 +47,12 @@
 
             Process currentProc = Process.GetCurrentProcess();
             var bytesInUse = currentProc.PrivateMemorySize64 / (double)1000_000;
-            if (MemoryUsageInMBStart == default)
+            if (!MemoryUsageInMBStart.HasValue)
                 MemoryUsageInMBStart = bytesInUse;
             Trace.WriteLine($"Private bytes after test run: {Math.Round(bytesInUse, 2)}MB ({MemoryUsageInMBStart}MB at start)(Iteration {iteration})");
 
-            Assert.True(bytesInUse - MemoryUsageInMBStart < 10, "Memory usage should not increase by more than 10MB");
+            double increaseInMB = bytesInUse - MemoryUsageInMBStart.Value;
+            Assert.True(increaseInMB < 10, $"Memory usage should not increase by more than 10MB (increase={increaseInMB})");
         }
     }
 }

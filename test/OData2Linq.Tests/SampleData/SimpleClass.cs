@@ -12,7 +12,7 @@ namespace OData2Linq.Tests.SampleData
         public const int NumberOfProperties = 9;
 
         private static readonly SimpleClass[] items =
-        {
+        [
             new SimpleClass {
                 Id = 1,
                 Name = "n1",
@@ -33,7 +33,7 @@ namespace OData2Linq.Tests.SampleData
                 TestEnum = TestEnum.Item2,
                 NameToIgnore = "ni1",
                 NameNotFilter="nf2"}
-        };
+        ];
 
         public static IQueryable<SimpleClass> CreateQuery()
         {
@@ -42,7 +42,7 @@ namespace OData2Linq.Tests.SampleData
 
         public int Id { get; set; }
 
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         public DateTime DateTime { get; set; }
 
@@ -55,10 +55,10 @@ namespace OData2Linq.Tests.SampleData
         public TestEnum TestEnum { get; set; }
 
         [IgnoreDataMember]
-        public string NameToIgnore { get; set; }
+        public string? NameToIgnore { get; set; }
 
         [NonFilterable]
-        public string NameNotFilter { get; set; }
+        public string? NameNotFilter { get; set; }
 
         [NotSortable]
         public int NotOrderable { get; set; }

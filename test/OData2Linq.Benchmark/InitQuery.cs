@@ -11,70 +11,70 @@ namespace OData2Linq.Benchmark
 {
     public class InitQuery
     {
-        private static ODataUriResolver DefaultResolver = new StringAsEnumResolver { EnableCaseInsensitive = true };
+        private readonly ODataUriResolver _defaultResolver = new StringAsEnumResolver { EnableCaseInsensitive = true };
 
-        private static readonly IEdmModel defaultEdmModel;
+        private readonly IEdmModel _defaultEdmModel;
 
-        private static readonly IQueryable<ClassWithDeepNavigation> query;
+        private readonly IQueryable<ClassWithDeepNavigation> _query;
 
-        static InitQuery()
+        public InitQuery()
         {
-            query = ClassWithDeepNavigation.CreateQuery();
+            _query = ClassWithDeepNavigation.CreateQuery();
 
-            ODataConventionModelBuilder builder = new ODataConventionModelBuilder();
+            var builder = new ODataConventionModelBuilder();
             builder.AddEntityType(typeof(ClassWithDeepNavigation));
             builder.AddEntitySet(typeof(ClassWithDeepNavigation).Name, new EntityTypeConfiguration(new ODataModelBuilder(), typeof(ClassWithDeepNavigation)));
-            defaultEdmModel = builder.GetEdmModel();
+            _defaultEdmModel = builder.GetEdmModel();
         }
 
         [Benchmark]
         public Tuple<IQueryable, ServiceContainer> LegacyEdmAndContainer()
         {
-            ODataConventionModelBuilder builder = new ODataConventionModelBuilder();
+            var builder = new ODataConventionModelBuilder();
             builder.AddEntityType(typeof(ClassWithDeepNavigation));
             builder.AddEntitySet(typeof(ClassWithDeepNavigation).Name, new EntityTypeConfiguration(new ODataModelBuilder(), typeof(ClassWithDeepNavigation)));
             var edmModel = builder.GetEdmModel();
 
-            ODataSettings settings = new ODataSettings();
+            var settings = new ODataSettings();
 
-            ServiceContainer container = new ServiceContainer();
+            var container = new ServiceContainer();
             container.AddService(typeof(IEdmModel), edmModel);
             container.AddService(typeof(ODataQuerySettings), settings.QuerySettings);
             container.AddService(typeof(ODataUriParserSettings), settings.ParserSettings);
-            container.AddService(typeof(ODataUriResolver), settings.Resolver ?? DefaultResolver);
+            container.AddService(typeof(ODataUriResolver), settings.Resolver ?? _defaultResolver);
             container.AddService(typeof(ODataSettings), settings);
             container.AddService(typeof(DefaultQueryConfigurations), settings.DefaultQueryConfigurations);
 
-            return new Tuple<IQueryable, ServiceContainer>(query, container);
+            return new Tuple<IQueryable, ServiceContainer>(_query, container);
         }
 
         [Benchmark]
         public Tuple<IQueryable, IServiceProvider> LegacyContainer()
         {
-            var edmModel = defaultEdmModel;
+            var edmModel = _defaultEdmModel;
 
-            if (edmModel.SchemaElements.Count(e => e.SchemaElementKind == EdmSchemaElementKind.EntityContainer) == 0)
+            if (!edmModel.SchemaElements.Any(e => e.SchemaElementKind == EdmSchemaElementKind.EntityContainer))
             {
                 throw new ArgumentException("Provided Entity Model have no IEdmEntityContainer", nameof(edmModel));
             }
 
-            ODataSettings settings = new ODataSettings();
+            var settings = new ODataSettings();
 
-            ServiceContainer container = new ServiceContainer();
+            var container = new ServiceContainer();
             container.AddService(typeof(IEdmModel), edmModel);
             container.AddService(typeof(ODataQuerySettings), settings.QuerySettings);
             container.AddService(typeof(ODataUriParserSettings), settings.ParserSettings);
-            container.AddService(typeof(ODataUriResolver), settings.Resolver ?? DefaultResolver);
+            container.AddService(typeof(ODataUriResolver), settings.Resolver ?? _defaultResolver);
             container.AddService(typeof(ODataSettings), settings);
             container.AddService(typeof(DefaultQueryConfigurations), settings.DefaultQueryConfigurations);
 
-            return new Tuple<IQueryable, IServiceProvider>(query, container);
+            return new Tuple<IQueryable, IServiceProvider>(_query, container);
         }
 
         [Benchmark]
         public Tuple<IQueryable, IServiceProvider> ODataExtension()
         {
-            var odataQuery = query.OData();
+            var odataQuery = _query.OData();
             return new Tuple<IQueryable, IServiceProvider>(odataQuery, odataQuery.ServiceProvider);
         }
     }

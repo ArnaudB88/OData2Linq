@@ -10,7 +10,7 @@
         [Fact]
         public void WhereById()
         {
-            var result = SimpleClass.CreateQuery().OData().Filter("Id eq 1").ToArray();
+            var result = SimpleClass.CreateQuery().OData().Filter($"{nameof(SimpleClass.Id)} eq 1").ToArray();
 
             Assert.Single(result);
             Assert.Equal(1, result[0].Id);
@@ -19,7 +19,7 @@
         [Fact]
         public void WhereByName()
         {
-            var result = SimpleClass.CreateQuery().OData().Filter("Name eq 'n1'").ToArray();
+            var result = SimpleClass.CreateQuery().OData().Filter($"{nameof(SimpleClass.Name)} eq 'n1'").ToArray();
 
             Assert.Single(result);
             Assert.Equal("n1", result[0].Name);
@@ -28,7 +28,7 @@
         [Fact]
         public void WhereByNameCaseInsensitiveKeyByDefault()
         {
-            var result = SimpleClass.CreateQuery().OData().Filter("name eq 'n1'").ToArray();
+            var result = SimpleClass.CreateQuery().OData().Filter($"{nameof(SimpleClass.Name).ToLower()} eq 'n1'").ToArray();
 
             Assert.Single(result);
             Assert.Equal("n1", result[0].Name);
@@ -38,7 +38,7 @@
         public void WhereByNameCaseSensitiveKeyByConfigThowException()
         {
             Assert.Throws<ODataException>(
-                () => SimpleClass.CreateQuery().OData(s => s.EnableCaseInsensitive = false).Filter("name eq 'n1'"));
+                () => SimpleClass.CreateQuery().OData(s => s.EnableCaseInsensitive = false).Filter($"{nameof(SimpleClass.Name).ToLower()} eq 'n1'"));
         }
 
         [Fact]
@@ -51,7 +51,7 @@
         [Fact]
         public void WhereByEnumString()
         {
-            var result = SimpleClass.CreateQuery().OData().Filter("TestEnum eq 'Item2'").ToArray();
+            var result = SimpleClass.CreateQuery().OData().Filter($"{nameof(SimpleClass.TestEnum)} eq 'Item2'").ToArray();
 
             Assert.Single(result);
             Assert.Equal("n2", result[0].Name);
@@ -62,7 +62,7 @@
         {
             var result = SimpleClass.CreateQuery()
                 .OData()
-                .Filter("TestEnum eq '2'").ToArray();
+                .Filter($"{nameof(SimpleClass.TestEnum)} eq '2'").ToArray();
 
             Assert.Single(result);
             Assert.Equal("n2", result[0].Name);
@@ -71,7 +71,7 @@
         [Fact]
         public void WhereByEnumStringCaseInsensitiveValueByDefault()
         {
-            var result = SimpleClass.CreateQuery().OData().Filter("TestEnum eq 'item2'").ToArray();
+            var result = SimpleClass.CreateQuery().OData().Filter($"{nameof(SimpleClass.TestEnum)} eq 'item2'").ToArray();
 
             Assert.Single(result);
             Assert.Equal("n2", result[0].Name);
@@ -89,7 +89,7 @@
         [Fact]
         public void WhereByNameNotNull()
         {
-            var result = SimpleClass.CreateQuery().OData().Filter("Name ne null").ToArray();
+            var result = SimpleClass.CreateQuery().OData().Filter($"{nameof(SimpleClass.Name)} ne null").ToArray();
 
             Assert.Equal("n1", result[0].Name);
         }

@@ -8,8 +8,8 @@ namespace OData2Linq.Tests
         [Fact]
         public void Hashes()
         {
-            ODataSettings s1 = new ODataSettings();
-            ODataSettings s2 = new ODataSettings();
+            var s1 = new ODataSettings();
+            var s2 = new ODataSettings();
 
             Assert.Equal(s1.QuerySettings.GetHashCode(), s2.QuerySettings.GetHashCode());
             Assert.Equal(s1.DefaultQueryConfigurations.GetHashCode(), s2.DefaultQueryConfigurations.GetHashCode());

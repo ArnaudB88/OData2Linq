@@ -10,7 +10,7 @@
         [Fact(Skip = "Currently not supported")]
         public void SerializeSelectExpand()
         {
-            JToken token = null;// ClassWithCollection.CreateQuery().OData().SelectExpand("Name", "Link2($filter=Id eq 311;$select=Name)").ToJson();
+            JToken? token = null;// ClassWithCollection.CreateQuery().OData().SelectExpand("Name", "Link2($filter=Id eq 311;$select=Name)").ToJson();
             Assert.NotNull(token);
 
             Assert.DoesNotContain("ModelID", token.ToString(Formatting.None));
@@ -19,7 +19,7 @@
         [Fact(Skip = "Currently not supported")]
         public void SerializeSelectExpand2()
         {
-            JToken token = null;// ClassWithCollection.CreateQuery().OData().SelectExpand("Name", "Link2($filter=Id eq 311;$select=Name)").ToJson();
+            JToken? token = null;// ClassWithCollection.CreateQuery().OData().SelectExpand("Name", "Link2($filter=Id eq 311;$select=Name)").ToJson();
             Assert.NotNull(token);
 
             Assert.DoesNotContain("ModelID", token.ToString(Formatting.None));
