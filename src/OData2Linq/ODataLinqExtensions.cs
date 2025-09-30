@@ -159,10 +159,7 @@
                 dictionary.Add("$skip", skipText);
             }
 
-            ODataQueryOptionParser queryOptionParser = GetParser(
-                query,
-                entitySetName,
-                dictionary);
+            ODataQueryOptionParser queryOptionParser = GetParser(query, entitySetName, dictionary);
 
             long? skip = queryOptionParser.ParseSkip();
             long? top = queryOptionParser.ParseTop();
@@ -193,10 +190,7 @@
         /// <param name="rawQueryOptions">The query options.</param>
         /// <param name="entitySetName">The entity set name.</param>
         /// <returns>The query <see cref="IQueryable{T}"/> with applied OData parameters.</returns>
-        public static IQueryable<T> ApplyQueryOptionsWithoutSelectExpand<T>(
-            this ODataQuery<T> query,
-            ODataRawQueryOptions rawQueryOptions,
-            string? entitySetName = null)
+        public static IQueryable<T> ApplyQueryOptionsWithoutSelectExpand<T>(this ODataQuery<T> query, ODataRawQueryOptions rawQueryOptions, string? entitySetName = null)
         {
             return ApplyQueryOptionsInternal(query, rawQueryOptions, entitySetName);
         }
@@ -209,15 +203,10 @@
         /// <param name="rawQueryOptions">The query options.</param>
         /// <param name="entitySetName">The entity set name.</param>
         /// <returns>The enumeration of query results <see cref="IEnumerable{ISelectExpandWrapper}"/>.</returns>
-        public static IEnumerable<ISelectExpandWrapper> ApplyQueryOptions<T>(
-            this ODataQuery<T> query,
-            ODataRawQueryOptions rawQueryOptions,
-            string? entitySetName = null)
+        public static IEnumerable<ISelectExpandWrapper> ApplyQueryOptions<T>(this ODataQuery<T> query, ODataRawQueryOptions rawQueryOptions, string? entitySetName = null)
         {
-            return ApplyQueryOptionsInternal(query, rawQueryOptions, entitySetName).SelectExpand(
-                rawQueryOptions.Select,
-                rawQueryOptions.Expand,
-                entitySetName);
+            return ApplyQueryOptionsInternal(query, rawQueryOptions, entitySetName)
+                .SelectExpand(rawQueryOptions.Select, rawQueryOptions.Expand, entitySetName);
         }
 
         /// <summary>
@@ -228,15 +217,10 @@
         /// <param name="rawQueryOptions">The query options.</param>
         /// <param name="entitySetName">The entity set name.</param>
         /// <returns>The query with special type of results <see cref="IQueryable{ISelectExpandWrapper}"/>.</returns>
-        public static IQueryable<ISelectExpandWrapper> ApplyQueryOptionsAsQueryable<T>(
-            this ODataQuery<T> query,
-            ODataRawQueryOptions rawQueryOptions,
-            string? entitySetName = null)
+        public static IQueryable<ISelectExpandWrapper> ApplyQueryOptionsAsQueryable<T>(this ODataQuery<T> query, ODataRawQueryOptions rawQueryOptions, string? entitySetName = null)
         {
-            return ApplyQueryOptionsInternal(query, rawQueryOptions, entitySetName).SelectExpandAsQueryable(
-                rawQueryOptions.Select,
-                rawQueryOptions.Expand,
-                entitySetName);
+            return ApplyQueryOptionsInternal(query, rawQueryOptions, entitySetName)
+                .SelectExpandAsQueryable(rawQueryOptions.Select, rawQueryOptions.Expand, entitySetName);
         }
 
         private static ODataQuery<T> ApplyQueryOptionsInternal<T>(ODataQuery<T> query, ODataRawQueryOptions rawQueryOptions, string? entitySetName)

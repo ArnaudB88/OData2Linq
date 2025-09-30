@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>2.2.0</Version>
+    <Version>2.2.1</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/ArnaudB88/OData2Linq</RepositoryUrl>
@@ -16,8 +16,8 @@
 
   <ItemGroup>
     <PackageReference Include="IgnoresAccessChecksToGenerator" Version="0.8.0" PrivateAssets="All" />
-	<PackageReference Include="Microsoft.AspNetCore.OData" Version="9.3.2" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.7" />
+	<PackageReference Include="Microsoft.AspNetCore.OData" Version="9.4.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.9" />
   </ItemGroup>
 	
   <ItemGroup>

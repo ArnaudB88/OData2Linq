@@ -6,7 +6,6 @@ namespace OData2Linq.Settings
     {
         public override int GetHashCode()
         {
-            var x = base.GetHashCode();
             return HashCode.Combine(HandleNullPropagation, PageSize, ModelBoundPageSize, EnsureStableOrdering, EnableConstantParameterization, TimeZone,
                 HashCode.Combine(EnableCorrelatedSubqueryBuffering, IgnoredQueryOptions, IgnoredNestedQueryOptions, HandleReferenceNavigationPropertyExpandFilter));
         }

@@ -7,14 +7,14 @@ namespace OData2Linq.Tests.Issues33
 
     public class RecursiveComplexType
     {
-        public RecursiveComplexType SelfReference { get; set; }
+        public RecursiveComplexType? SelfReference { get; set; }
     }
 
     public class ListItem
     {
         public int Id { get; set; }
 
-        public RecursiveComplexType RecursiveComplexType { get; set; }
+        public RecursiveComplexType? RecursiveComplexType { get; set; }
     }
 
     public class Issue33
@@ -26,8 +26,8 @@ namespace OData2Linq.Tests.Issues33
 
             var queryable = new ListItem[]
             {
-                new ListItem { Id = 1, RecursiveComplexType = new RecursiveComplexType() },
-                new ListItem { Id = 2, RecursiveComplexType = new RecursiveComplexType() }
+                new() { Id = 1, RecursiveComplexType = new RecursiveComplexType() },
+                new() { Id = 2, RecursiveComplexType = new RecursiveComplexType() }
             }.AsQueryable();
 
             // act

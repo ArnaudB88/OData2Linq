@@ -5,23 +5,23 @@ namespace OData2Linq.Benchmark
 {
     public class QueryOperations
     {
-        private static readonly IQueryable<SimpleClass> query;
+        private readonly IQueryable<SimpleClass> _query;
 
-        static QueryOperations()
+        public QueryOperations()
         {
-            query = SimpleClass.CreateQuery();
+            _query = SimpleClass.CreateQuery();
         }
 
         [Benchmark]
         public SimpleClass[] ODataFilter()
         {
-            return query.OData().Filter("Id eq 1").ToArray();
+            return _query.OData().Filter("Id eq 1").ToArray();
         }
 
         [Benchmark]
         public SimpleClass ODataOrderByIdDefault()
         {
-            return query.OData().OrderBy("Id,Name").First();
+            return _query.OData().OrderBy("Id,Name").First();
         }
     }
 }

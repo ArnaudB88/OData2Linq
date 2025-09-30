@@ -5,11 +5,11 @@
 
     public class ClassWithCollection
     {
-        private static readonly ClassWithCollection[] items = new[]
-        {
-            new ClassWithCollection {Id = 31, Name = "n31", Link2 = new[] { new SimpleClass {Id = 311, Name = "n311"},new SimpleClass {Id = 312, Name = "n312"} }},
-            new ClassWithCollection {Id = 32, Name = "n32", Link2 = new[] { new SimpleClass {Id = 321, Name = "n321"} }}
-        };
+        private static readonly ClassWithCollection[] items =
+        [
+            new ClassWithCollection {Id = 31, Name = "n31", Link2 = [new SimpleClass {Id = 311, Name = "n311"},new SimpleClass {Id = 312, Name = "n312"}]},
+            new ClassWithCollection {Id = 32, Name = "n32", Link2 = [new SimpleClass {Id = 321, Name = "n321"}]}
+        ];
 
         public static IQueryable<ClassWithCollection> CreateQuery()
         {
@@ -18,8 +18,8 @@
 
         public long Id { get; set; }
 
-        public string Name { get; set; }
+        public required string Name { get; set; }
 
-        public virtual ICollection<SimpleClass> Link2 { get; set; }
+        public virtual required ICollection<SimpleClass> Link2 { get; set; }
     }
 }
