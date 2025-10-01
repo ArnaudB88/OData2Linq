@@ -1,19 +1,23 @@
-﻿namespace OData2Linq
+namespace OData2Linq
 {
+    using Helpers;
     using Microsoft.AspNetCore.OData.Query;
     using Microsoft.AspNetCore.OData.Query.Validator;
     using Microsoft.AspNetCore.OData.Query.Wrapper;
-    using Microsoft.Extensions.DependencyInjection;
     using Microsoft.OData.Edm;
     using Microsoft.OData.ModelBuilder;
     using Microsoft.OData.UriParser;
-    using OData2Linq.Helpers;
-    using OData2Linq.Settings;
+    using Wrappers;
+    using Settings;
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.ComponentModel.Design;
     using System.Linq;
+    using DependencyInjection;
+    using ODataQuerySettings = Settings.ODataQuerySettings;
+    using ODataRawQueryOptions = Settings.ODataRawQueryOptions;
+    using AspNetDefaultQueryConfigurations = Microsoft.AspNetCore.OData.Query.DefaultQueryConfigurations;
 
     public static class ODataLinqExtensions
     {
@@ -54,18 +58,12 @@
                 }
             }
 
-            int settingsHash = HashCode.Combine(
-                settings.QuerySettings,
-                settings.DefaultQueryConfigurations,
-                settings.ParserSettings.MaximumExpansionCount,
-                settings.ParserSettings.MaximumExpansionDepth);
-
-            var baseContainer = Containers.GetOrAdd(settingsHash, i =>
+            var baseContainer = Containers.GetOrAdd(settings.GetHashCode(), _ =>
             {
                 var c = new ServiceContainer();
 
                 c.AddService(typeof(ODataQuerySettings), settings.QuerySettings);
-                c.AddService(typeof(DefaultQueryConfigurations), settings.DefaultQueryConfigurations);
+                c.AddService(typeof(AspNetDefaultQueryConfigurations), settings.DefaultQueryConfigurations.ToAspNetCoreDefaultQueryConfigurations());
                 c.AddService(typeof(ODataUriParserSettings), settings.ParserSettings);
 
                 return c;
@@ -87,13 +85,12 @@
         /// <param name="expandText">The $expand parameter text.</param>
         /// <param name="entitySetName">The entity set name.</param>
         /// <typeparam name="T">The query type param</typeparam>
-        /// <returns>The <see cref="IEnumerable{ISelectExpandWrapper}"/> selection result in specific format.</returns>
-        public static IEnumerable<ISelectExpandWrapper> SelectExpand<T>(this ODataQuery<T> query,
-            string? selectText = null, string? expandText = null, string? entitySetName = null)
+        /// <returns>The <see cref="IEnumerable{IQueryWrapper}"/> selection result in specific format.</returns>
+        public static IEnumerable<IODataQueryWrapper> SelectExpand<T>(this ODataQuery<T> query, string? selectText = null, string? expandText = null, string? entitySetName = null)
         {
-            var result = SelectExpandInternal(query, selectText, expandText, entitySetName);
+            IQueryable<IODataQueryWrapper> result = SelectExpandInternal(query, selectText, expandText, entitySetName);
 
-            return Enumerate(result);
+            return result.AsEnumerable();
         }
 
         /// <summary>
@@ -104,32 +101,12 @@
         /// <param name="expandText">The $expand parameter text.</param>
         /// <param name="entitySetName">The entity set name.</param>
         /// <typeparam name="T">The query type param</typeparam>
-        /// <returns>The <see cref="IQueryable{ISelectExpandWrapper}"/> selection result in specific format.</returns>
-        public static IQueryable<ISelectExpandWrapper> SelectExpandAsQueryable<T>(this ODataQuery<T> query,
-            string? selectText = null, string? expandText = null, string? entitySetName = null)
+        /// <returns>The <see cref="IQueryable{IODataQueryWrapper}"/> selection result in specific format.</returns>
+        public static IQueryable<IODataQueryWrapper> SelectExpandAsQueryable<T>(this ODataQuery<T> query, string? selectText = null, string? expandText = null, string? entitySetName = null)
         {
-            IQueryable result = SelectExpandInternal(query, selectText, expandText, entitySetName);
-            return query.Provider.CreateQuery<ISelectExpandWrapper>(result.Expression);
-        }
+            IQueryable<IODataQueryWrapper> result = SelectExpandInternal(query, selectText, expandText, entitySetName);
 
-        private static IQueryable<ISelectExpandWrapper> SelectExpandInternal<T>(ODataQuery<T> query, string? selectText, string? expandText, string? entitySetName)
-        {
-            var helper = new SelectExpandHelper<T>(
-                new ODataRawQueryOptions { Select = selectText, Expand = expandText },
-                query,
-                entitySetName);
-
-            helper.AddAutoSelectExpandProperties();
-
-            var result = helper.Apply(query);
-
-            // In case of SelectExpand ,method was called to convert to ISelectExpandWrapper without actually applying $select and $expand params
-            if (result == query && selectText == null && expandText == null)
-            {
-                return SelectExpandInternal(query, "*", expandText, entitySetName);
-            }
-
-            return (IQueryable<ISelectExpandWrapper>)result;
+            return query.Provider.CreateQuery<IODataQueryWrapper>(result.Expression);
         }
 
         /// <summary>
@@ -203,10 +180,9 @@
         /// <param name="rawQueryOptions">The query options.</param>
         /// <param name="entitySetName">The entity set name.</param>
         /// <returns>The enumeration of query results <see cref="IEnumerable{ISelectExpandWrapper}"/>.</returns>
-        public static IEnumerable<ISelectExpandWrapper> ApplyQueryOptions<T>(this ODataQuery<T> query, ODataRawQueryOptions rawQueryOptions, string? entitySetName = null)
+        public static IEnumerable<IODataQueryWrapper> ApplyQueryOptions<T>(this ODataQuery<T> query, ODataRawQueryOptions rawQueryOptions, string? entitySetName = null)
         {
-            return ApplyQueryOptionsInternal(query, rawQueryOptions, entitySetName)
-                .SelectExpand(rawQueryOptions.Select, rawQueryOptions.Expand, entitySetName);
+            return ApplyQueryOptionsInternal(query, rawQueryOptions, entitySetName).SelectExpand(rawQueryOptions.Select, rawQueryOptions.Expand, entitySetName);
         }
 
         /// <summary>
@@ -216,11 +192,30 @@
         /// <param name="query">The OData aware query.</param>
         /// <param name="rawQueryOptions">The query options.</param>
         /// <param name="entitySetName">The entity set name.</param>
-        /// <returns>The query with special type of results <see cref="IQueryable{ISelectExpandWrapper}"/>.</returns>
-        public static IQueryable<ISelectExpandWrapper> ApplyQueryOptionsAsQueryable<T>(this ODataQuery<T> query, ODataRawQueryOptions rawQueryOptions, string? entitySetName = null)
+        /// <returns>The query with special type of results <see cref="IQueryable{IODataQueryWrapper}"/>.</returns>
+        public static IQueryable<IODataQueryWrapper> ApplyQueryOptionsAsQueryable<T>(this ODataQuery<T> query, ODataRawQueryOptions rawQueryOptions, string? entitySetName = null)
         {
-            return ApplyQueryOptionsInternal(query, rawQueryOptions, entitySetName)
-                .SelectExpandAsQueryable(rawQueryOptions.Select, rawQueryOptions.Expand, entitySetName);
+            return ApplyQueryOptionsInternal(query, rawQueryOptions, entitySetName).SelectExpandAsQueryable(rawQueryOptions.Select, rawQueryOptions.Expand, entitySetName);
+        }
+
+        private static IQueryable<IODataQueryWrapper> SelectExpandInternal<T>(ODataQuery<T> query, string? selectText, string? expandText, string? entitySetName)
+        {
+            while (true)
+            {
+                SelectExpandHelper<T> helper = new SelectExpandHelper<T>(new ODataRawQueryOptions { Select = selectText, Expand = expandText }, query, entitySetName);
+
+                helper.AddAutoSelectExpandProperties();
+
+                IQueryable result = helper.Apply(query);
+
+                // In case of SelectExpand ,method was called to convert to ISelectExpandWrapper without actually applying $select and $expand params
+                if (Equals(result, query) && selectText == null && expandText == null)
+                {
+                    return SelectExpandInternal(query, "*", expandText, entitySetName);
+                }
+
+                return new ODataQueryWrapperQueryable((IQueryable<ISelectExpandWrapper>)result);
+            }
         }
 
         private static ODataQuery<T> ApplyQueryOptionsInternal<T>(ODataQuery<T> query, ODataRawQueryOptions rawQueryOptions, string? entitySetName)
@@ -272,9 +267,9 @@
             };
             var option = new FilterQueryOption(filterText, queryContext, queryOptionParser);
             var validator = new FilterQueryValidator();
-            validator.Validate(option, settings.ValidationSettings);
+            validator.Validate(option, settings.ValidationSettings.ToAspNetCoreODataValidationSettings());
 
-            var result = option.ApplyTo(query, query.ServiceProvider.GetRequiredService<ODataQuerySettings>());
+            var result = option.ApplyTo(query, query.ServiceProvider.GetRequiredService<ODataQuerySettings>().ToAspNetCoreODataQuerySettings());
 
             return new ODataQuery<T>(result, query.ServiceProvider);
         }
@@ -306,21 +301,11 @@
             };
             var option = new OrderByQueryOption(orderbyText, queryContext, queryOptionParser);
             var validator = new OrderByQueryValidator();
-            validator.Validate(option, settings.ValidationSettings);
+            validator.Validate(option, settings.ValidationSettings.ToAspNetCoreODataValidationSettings());
 
-            var result = option.ApplyTo(query, query.ServiceProvider.GetRequiredService<ODataQuerySettings>());
+            var result = option.ApplyTo(query, query.ServiceProvider.GetRequiredService<ODataQuerySettings>().ToAspNetCoreODataQuerySettings());
 
             return new ODataQueryOrdered<T>(result, query.ServiceProvider);
-        }
-
-        private static IEnumerable<T> Enumerate<T>(IQueryable<T> queryable)
-        {
-            var enumerator = queryable.GetEnumerator();
-
-            while (enumerator.MoveNext())
-            {
-                yield return enumerator.Current;
-            }
         }
 
         public static ODataQueryOptionParser GetParser<T>(ODataQuery<T> query, string? entitySetName, IDictionary<string, string> raws)
@@ -329,23 +314,20 @@
 
             entitySetName ??= typeof(T).Name;
 
-            IEdmEntityContainer[] containers =
-                edmModel.SchemaElements.Where(
-                        e => e.SchemaElementKind == EdmSchemaElementKind.EntityContainer &&
-                             (e as IEdmEntityContainer)?.FindEntitySet(entitySetName) != null)
-                    .OfType<IEdmEntityContainer>()
-                    .ToArray();
+            IEdmEntityContainer[] containers = edmModel
+                .SchemaElements
+                .Where(e => e.SchemaElementKind == EdmSchemaElementKind.EntityContainer && (e as IEdmEntityContainer)?.FindEntitySet(entitySetName) != null)
+                .OfType<IEdmEntityContainer>()
+                .ToArray();
 
             if (containers.Length == 0)
             {
-                throw new ArgumentException($"Unable to find {entitySetName} entity set in the model.",
-                    nameof(entitySetName));
+                throw new ArgumentException($"Unable to find {entitySetName} entity set in the model.", nameof(entitySetName));
             }
 
             if (containers.Length > 1)
             {
-                throw new ArgumentException($"Entity Set {entitySetName} found more that 1 time",
-                    nameof(entitySetName));
+                throw new ArgumentException($"Entity Set {entitySetName} found more that 1 time", nameof(entitySetName));
             }
 
             IEdmEntitySet entitySet = containers.Single().FindEntitySet(entitySetName);

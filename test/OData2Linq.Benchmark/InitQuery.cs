@@ -1,18 +1,16 @@
-﻿using BenchmarkDotNet.Attributes;
-using Microsoft.AspNetCore.OData.Query;
+using BenchmarkDotNet.Attributes;
 using Microsoft.OData.Edm;
 using Microsoft.OData.ModelBuilder;
 using Microsoft.OData.UriParser;
 using OData2Linq.Settings;
 using OData2Linq.Tests.SampleData;
 using System.ComponentModel.Design;
+using AspNetCoreDefaultQueryConfigurations = Microsoft.AspNetCore.OData.Query.DefaultQueryConfigurations;
 
 namespace OData2Linq.Benchmark
 {
     public class InitQuery
     {
-        private readonly ODataUriResolver _defaultResolver = new StringAsEnumResolver { EnableCaseInsensitive = true };
-
         private readonly IEdmModel _defaultEdmModel;
 
         private readonly IQueryable<ClassWithDeepNavigation> _query;
@@ -23,7 +21,7 @@ namespace OData2Linq.Benchmark
 
             var builder = new ODataConventionModelBuilder();
             builder.AddEntityType(typeof(ClassWithDeepNavigation));
-            builder.AddEntitySet(typeof(ClassWithDeepNavigation).Name, new EntityTypeConfiguration(new ODataModelBuilder(), typeof(ClassWithDeepNavigation)));
+            builder.AddEntitySet(nameof(ClassWithDeepNavigation), new EntityTypeConfiguration(new ODataModelBuilder(), typeof(ClassWithDeepNavigation)));
             _defaultEdmModel = builder.GetEdmModel();
         }
 
@@ -32,7 +30,7 @@ namespace OData2Linq.Benchmark
         {
             var builder = new ODataConventionModelBuilder();
             builder.AddEntityType(typeof(ClassWithDeepNavigation));
-            builder.AddEntitySet(typeof(ClassWithDeepNavigation).Name, new EntityTypeConfiguration(new ODataModelBuilder(), typeof(ClassWithDeepNavigation)));
+            builder.AddEntitySet(nameof(ClassWithDeepNavigation), new EntityTypeConfiguration(new ODataModelBuilder(), typeof(ClassWithDeepNavigation)));
             var edmModel = builder.GetEdmModel();
 
             var settings = new ODataSettings();
@@ -41,9 +39,9 @@ namespace OData2Linq.Benchmark
             container.AddService(typeof(IEdmModel), edmModel);
             container.AddService(typeof(ODataQuerySettings), settings.QuerySettings);
             container.AddService(typeof(ODataUriParserSettings), settings.ParserSettings);
-            container.AddService(typeof(ODataUriResolver), settings.Resolver ?? _defaultResolver);
+            container.AddService(typeof(ODataUriResolver), settings.Resolver);
             container.AddService(typeof(ODataSettings), settings);
-            container.AddService(typeof(DefaultQueryConfigurations), settings.DefaultQueryConfigurations);
+            container.AddService(typeof(AspNetCoreDefaultQueryConfigurations), settings.DefaultQueryConfigurations.ToAspNetCoreDefaultQueryConfigurations());
 
             return new Tuple<IQueryable, ServiceContainer>(_query, container);
         }
@@ -64,9 +62,9 @@ namespace OData2Linq.Benchmark
             container.AddService(typeof(IEdmModel), edmModel);
             container.AddService(typeof(ODataQuerySettings), settings.QuerySettings);
             container.AddService(typeof(ODataUriParserSettings), settings.ParserSettings);
-            container.AddService(typeof(ODataUriResolver), settings.Resolver ?? _defaultResolver);
+            container.AddService(typeof(ODataUriResolver), settings.Resolver);
             container.AddService(typeof(ODataSettings), settings);
-            container.AddService(typeof(DefaultQueryConfigurations), settings.DefaultQueryConfigurations);
+            container.AddService(typeof(AspNetCoreDefaultQueryConfigurations), settings.DefaultQueryConfigurations.ToAspNetCoreDefaultQueryConfigurations());
 
             return new Tuple<IQueryable, IServiceProvider>(_query, container);
         }

@@ -1,12 +1,12 @@
-﻿namespace OData2Linq
+namespace OData2Linq
 {
-    using Microsoft.Extensions.DependencyInjection;
     using Microsoft.OData.Edm;
     using System;
     using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
+    using DependencyInjection;
 
     public class ODataQuery<T> : IQueryable<T>
     {

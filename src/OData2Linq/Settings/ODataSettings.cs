@@ -1,14 +1,13 @@
-﻿namespace OData2Linq.Settings
+namespace OData2Linq.Settings
 {
-    using Microsoft.AspNetCore.OData.Query.Validator;
     using Microsoft.OData.UriParser;
     using System;
 
-    public class ODataSettings
+    public record ODataSettings
     {
-        private static readonly object SyncObj = new();
+        private static readonly object SyncObj = new object();
 
-        private static Action<ODataSettings>? Initializer = null;
+        private static Action<ODataSettings>? Initializer;
 
         /// <summary>
         /// Sets the action which will be used to initialize every instance of <type ref="ODataSettings"></type>.
@@ -18,24 +17,25 @@
         /// <exception cref="InvalidOperationException">SetInitializer</exception>
         public static void SetInitializer(Action<ODataSettings> initializer)
         {
-            ArgumentNullException.ThrowIfNull(initializer);
-
-            if (Initializer == null)
+            if (initializer == null)
             {
-                lock (SyncObj)
+                throw new ArgumentNullException(nameof(initializer));
+            }
+
+            lock (SyncObj)
+            {
+                if (Initializer == null)
                 {
-                    if (Initializer == null)
-                    {
-                        Initializer = initializer;
-                        return;
-                    }
+                    Initializer = initializer;
+
+                    return;
                 }
             }
 
             throw new InvalidOperationException($"{nameof(SetInitializer)} method can be invoked only once");
         }
 
-        public ODataQuerySettingsHashable QuerySettings { get; } = new ODataQuerySettingsHashable { PageSize = 20 };
+        public ODataQuerySettings QuerySettings { get; } = new ODataQuerySettings { PageSize = 20 };
 
         public ODataValidationSettings ValidationSettings { get; } = new ODataValidationSettings();
 
@@ -49,7 +49,7 @@
             set => Resolver.EnableCaseInsensitive = value;
         }
 
-        public DefaultQueryConfigurationsHashable DefaultQueryConfigurations { get; } = new DefaultQueryConfigurationsHashable
+        public DefaultQueryConfigurations DefaultQueryConfigurations { get; } = new DefaultQueryConfigurations
         {
             EnableFilter = true,
             EnableOrderBy = true,
@@ -61,6 +61,37 @@
         public ODataSettings()
         {
             Initializer?.Invoke(this);
+
+            HashCode.Combine(new AbandonedMutexException());
+        }
+
+        public override int GetHashCode()
+        {
+            HashCode hash = new HashCode();
+
+            hash.Add(DefaultQueryConfigurations.EnableExpand);
+            hash.Add(DefaultQueryConfigurations.EnableSelect);
+            hash.Add(DefaultQueryConfigurations.EnableCount);
+            hash.Add(DefaultQueryConfigurations.EnableOrderBy);
+            hash.Add(DefaultQueryConfigurations.EnableFilter);
+            hash.Add(DefaultQueryConfigurations.MaxTop);
+            hash.Add(DefaultQueryConfigurations.EnableSkipToken);
+
+            hash.Add(QuerySettings.HandleNullPropagation);
+            hash.Add(QuerySettings.PageSize);
+            hash.Add(QuerySettings.ModelBoundPageSize);
+            hash.Add(QuerySettings.EnsureStableOrdering);
+            hash.Add(QuerySettings.EnableConstantParameterization);
+            hash.Add(QuerySettings.TimeZone);
+            hash.Add(QuerySettings.EnableCorrelatedSubqueryBuffering);
+            hash.Add(QuerySettings.IgnoredQueryOptions);
+            hash.Add(QuerySettings.IgnoredNestedQueryOptions);
+            hash.Add(QuerySettings.HandleReferenceNavigationPropertyExpandFilter);
+
+            hash.Add(ParserSettings.MaximumExpansionCount);
+            hash.Add(ParserSettings.MaximumExpansionDepth);
+
+            return hash.ToHashCode();
         }
     }
 }
